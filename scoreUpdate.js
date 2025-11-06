@@ -32,18 +32,14 @@ const CONF_POINTS = {
   highMajor: { home: 3.5, road: 5 },
   highMid:   { home: 2.5, road: 4 },
   trueMid:   { home: 1.5, road: 2.5},
-  lowMajor:    { home: 1, road: 1.5},
-  top25:    { home: 2.5, road: 2.5},
-  top10:    { home: 5, road: 5},
+  lowMajor:    { home: 1, road: 1.5}
 };
 
 const NON_CONF_POINTS = {
-    top25:    { home: 2.5, road: 2.5},
-    top10:    { home: 5, road: 5},
-    sameTier: { home: 2, road: 2},
-    upOne:    { home: 4, road: 4},
-    upTwo:    { home: 6, road: 6},
-    upThree:  { home: 8, road: 8}
+    0: 2,
+    1: 4,
+    2: 6,
+    3: 8
 }
 
 /***** ENTRY POINTS *****/
@@ -229,7 +225,7 @@ function getSchoolIndex_() {
   // returns array of { name, conference, ... }
   const rows = fetchJson_(`${NCAA_API_BASE}/standings/basketball-men/d1`);
   const map = new Map();
-  for (const row of (rows || [])) {
+  for (const row of (rows.data)) {
     const conference = row.conference;
     for (const school of row.standings){
         map.set(school.School, conference);
@@ -246,4 +242,58 @@ function fetchJson_(url) {
   try {
     return JSON.parse(res.getContentText());
   } catch (e) { return null; }
+}
+
+
+
+function dailySync(){
+    // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
+    const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate.replace(/-/g,'/')}`);
+    const top25Raw = fetchJson_(`{NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`);
+    const top25 = parseApPoll_(top25Raw);
+    if (!dayGames || !dayGames.games) return;
+
+    for (const team of roster) {
+        for( const game of dayGames.games){
+            let points = 0;
+            const home = game.home.names.short;
+            const away = game.away.names.short;
+            const winner = game.home.winner ? home : away;
+            if (winner == team){
+                const homeConference = game.home.conferences.conferenceSeo;
+                const awayConference = game.home.conferences.conferenceSeo;
+                if (homeConference == awayConference){
+                    // check conference tier
+                    const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
+                                    HIGH_MID_MAJOR.has(homeConference) ? highMid :
+                                    TRUE_MID_MAJOR.has(homeConference) ? trueMid :
+                                    LOW_MAJOR.has(homeConference) ? lowMajor :
+                                    null;
+                    points = CONF_POINTS[tier][winnerSide === 'home' ? 'home' : 'road'];
+                    if (top25.includes(winner)){
+                        if (top25.indexOf(winner) < 10) {
+                            points = points + 5;
+                        }
+                        else {
+                            points = points + 2.5;
+                        }
+                    }
+                }
+                else {
+                    // non conference tier
+                }
+                confTierDiff = checkConferenceTierDiff_(homeConference, awayConference);
+            }
+        }
+    }
+}
+
+function parseApPoll_(json) {
+  const teams = [];
+  for (const row of (json.data || [])) {
+    const name = normalizePollTeamName_(row.TEAM);
+    const rank = Number(row.RANKING);
+    teams.push({ name, rank, points: Number(row.POINTS) });
+  }
+  return teams;
 }
