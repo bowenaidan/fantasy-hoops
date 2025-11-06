@@ -11,6 +11,12 @@ const HIGH_MAJOR = new Set([
 const HIGH_MID_MAJOR = new Set([
   'Mountain West','A-10','WCC','AAC','MVC','C-USA' // example; tweak
 ]);
+const TRUE_MID_MAJOR = new Set([
+  'Mountain West','A-10','WCC','AAC','MVC','C-USA' // example; tweak
+]);
+const LOW_MAJOR = new Set([
+  'Mountain West','A-10','WCC','AAC','MVC','C-USA' // example; tweak
+]);
 
 // POSTSEASON mapping by round label appearing on NCAA pages.
 const POSTSEASON_POINTS = {
@@ -26,7 +32,7 @@ const CONF_POINTS = {
   highMajor: { home: 3.5, road: 5 },
   highMid:   { home: 2.5, road: 4 },
   trueMid:   { home: 1.5, road: 2.5},
-  lowMid:    { home: 1, road: 1.5},
+  lowMajor:    { home: 1, road: 1.5},
   top25:    { home: 2.5, road: 2.5},
   top10:    { home: 5, road: 5},
 };
@@ -221,14 +227,13 @@ function getSchoolIndex_() {
   if (hit) return new Map(JSON.parse(hit));
 
   // returns array of { name, conference, ... }
-  const rows = fetchJson_(`${NCAA_API_BASE}/schools-index`);
+  const rows = fetchJson_(`${NCAA_API_BASE}/standings/basketball-men/d1`);
   const map = new Map();
   for (const row of (rows || [])) {
-    const name = normalizeSchoolName_(row.name || row.school || row.displayName);
-    if (!name) continue;
-    map.set(name, {
-      conference: row.conference || row.league || row.conf || ''
-    });
+    const conference = row.conference;
+    for (const school of row.standings){
+        map.set(school.School, conference);
+    }
   }
   cache.put(key, JSON.stringify([...map]), 21600); // 6 hours
   return map;
