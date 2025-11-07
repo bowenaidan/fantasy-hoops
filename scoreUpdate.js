@@ -259,9 +259,11 @@ function dailySync(){
             const home = game.home.names.short;
             const away = game.away.names.short;
             const winner = game.home.winner ? home : away;
+            const loser = game.home.winner ? away : home;
             if (winner == team){
                 const homeConference = game.home.conferences.conferenceSeo;
                 const awayConference = game.home.conferences.conferenceSeo;
+                winnerConference = winner === 'home' ? homeConference : awayConference;
                 if (homeConference == awayConference){
                     // check conference tier
                     const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
@@ -270,19 +272,32 @@ function dailySync(){
                                     LOW_MAJOR.has(homeConference) ? lowMajor :
                                     null;
                     points = CONF_POINTS[tier][winnerSide === 'home' ? 'home' : 'road'];
-                    if (top25.includes(winner)){
-                        if (top25.indexOf(winner) < 10) {
-                            points = points + 5;
-                        }
-                        else {
-                            points = points + 2.5;
-                        }
-                    }
                 }
                 else {
                     // non conference tier
+                    const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
+                                    HIGH_MID_MAJOR.has(winnerConference) ? 2 :
+                                    TRUE_MID_MAJOR.has(winnerConference) ? 1 :
+                                    LOW_MAJOR.has(winnerConference) ? 0 :
+                                    null;
+                    const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
+                                    HIGH_MID_MAJOR.has(loserConference) ? 2 :
+                                    TRUE_MID_MAJOR.has(loserConference) ? 1 :
+                                    LOW_MAJOR.has(loserConference) ? 0 :
+                                    null;
+                    const confDiff = loserTier - winnerTier;
+                    if (confDiff + 1 > 0) {
+                        points = (confDiff + 1) * 2;
+                    }
                 }
-                confTierDiff = checkConferenceTierDiff_(homeConference, awayConference);
+                if (top25.includes(winner)){
+                    if (top25.indexOf(winner) < 10) {
+                        points = points + 5;
+                    }
+                    else {
+                        points = points + 2.5;
+                    }
+                }
             }
         }
     }
