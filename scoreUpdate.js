@@ -121,15 +121,18 @@ function dailySync(isoDate) {
                           HIGH_MID_MAJOR.has(winnerConference) ? 2 :
                           TRUE_MID_MAJOR.has(winnerConference) ? 1 :
                           LOW_MAJOR.has(winnerConference) ? 0 :
-                          null;
+                          -1;
           const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
                           HIGH_MID_MAJOR.has(loserConference) ? 2 :
                           TRUE_MID_MAJOR.has(loserConference) ? 1 :
                           LOW_MAJOR.has(loserConference) ? 0 :
-                          null;
+                          -1;
           const confDiff = loserTier - winnerTier;
           if (confDiff + 1 > 0) {
             points = (confDiff + 1) * 2;
+          }
+          if (winnerTier == -1) {
+            points = -4;
           }
         }
         if (top25.includes(loser)){
