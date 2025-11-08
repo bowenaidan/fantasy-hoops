@@ -53,18 +53,6 @@ const NON_CONF_POINTS = {
     3: 8
 }
 
-function getGames() {
-  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/2025/11/07/all-conf`);
-  // Logger.log(JSON.stringify(dayGames.games?.[0], null, 2));
-  for (const games of dayGames.games) {
-    if (games.game.away.names.short === "Kansas"){
-      Logger.log(games);
-      Logger.log(games.game.away.conferences);
-      Logger.log(games.game.home.conferences);
-    }
-  }
-}
-
 function fetchJson_(url) {
   Utilities.sleep(50); // gentle spacing (<5 rps)
   const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
@@ -187,7 +175,8 @@ function updateStandings_(pointMap) {
 
   pointMap.forEach((points, team) => {
     if (typeof points !== 'number' || isNaN(points)) return;
-    const entry = indexByTeam.get(team.toString().trim());
+    const normalizedTeam = normalizeSchoolName_(team);
+    const entry = indexByTeam.get(normalizedTeam);
     if (!entry) {
       Logger.log(`Team not found in standings: ${team}`);
       return;
