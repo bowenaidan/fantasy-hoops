@@ -6,19 +6,28 @@ const SHEET_DRAFT = '2025-2026 DRAFT'; // source of rosters
 
 // EDIT: define your tier lists (adjust to your league)
 const HIGH_MAJOR = new Set([
-  'acc','big-12','big-10','sec','Big East','Pac-12','aac' // example; tweak
+  'acc','big-12','big-ten','sec','big-east'
 ]);
 const HIGH_MID_MAJOR = new Set([
-  'Mountain West','A-10','WCC','AAC','MVC','C-USA' // example; tweak
+  'mountain-west','atlantic-10','wcc','american'
 ]);
 const TRUE_MID_MAJOR = new Set([
-  'Mountain West','A-10','WCC','AAC','MVC','C-USA' // example; tweak
+  'mvc','cusa','ivy-league','big-west','socon','caa', 'sun-belt', 'mac'
 ]);
 const LOW_MAJOR = new Set([
-  'Mountain West','A-10','WCC','AAC','MVC','C-USA' // example; tweak
+  'wac','big-south','big-sky','southland','horizon','summit-league', 'maac', 'asun', 'ovc', 'patriot', 'america-east', 'swac', 'meac', 'nec'
 ]);
 
-const ROSTER = ["North Carolina", "Wilmington (DE)", "Louisville", "Florida"];
+const ROSTER = ["UConn", "BYU", "High Point", "Michigan St.", "Saint Louis", "Marquette", "South Fla.", "UC Irvine", "Norfolk St.", "UNCW",
+                "Kentucky", "Tennessee", "Saint Mary's (CA)", "Utah St.", "VMI", "North Dakota St.", "Drake", "Virginia", "UMBC", "Texas A&M", "Houston", "Illinois", "Memphis", "Southern California", "NC State", "UNI", "Vermont", "Ole Miss", "Bethune-Cookman", "Oklahoma St.", 
+                "Florida", "UCLA", "Louisville", "George Mason", "Creighton", "North Carolina", "Arkansas St.", "UC Santa Barbara", "Little Rock", "Colorado St.", 
+                "Duke", "Arkansas", "Iowa St.", "VCU", "Towson", "Wisconsin", "Siena", "Miama (FL)", "California Baptist", "Villanova", 
+                "Michigan", "Gonzaga", "Clemson", "Grand Canyon", "Illinois St.", "St. Thomas (MN)", "Cincinatti", "Charleston", "Utah Valley", "Wichita St.", 
+                "St. John's (NY)", "Texas Tech", "Liberty", "McNeese", "Mississippi St.", "Montana", "George Washington", "Indiana", "Iowa", "Kent St.", 
+                "Purdue", "Alabama", "Auburn", "San Francisco", "Chattanooga", "Ohio St.", "Queens (NC)", "Tulsa", "James Madison", "Notre Dame", 
+                "Kansas", "San Diego St.", "Baylor", "Yale", "Vanderbilt", "Texas", "Lamar University", "Maryland", "Washington", "Hawaii", 
+                "Oregon", "Arizona", "Dayton", "Akron", "Robert Morris", "Missouri", "SMU", "Butler", "Pepperdine", "LSU"];
+
 
 // POSTSEASON mapping by round label appearing on NCAA pages.
 const POSTSEASON_POINTS = {
@@ -96,8 +105,8 @@ function dailySync(isoDate) {
       if (winner == team){
         const homeConference = games.game.home.conferences[0].conferenceSeo;
         const awayConference = games.game.away.conferences[0].conferenceSeo;
-        winnerConference = winner === 'home' ? homeConference : awayConference;
-        loserConference = loser === 'home' ? homeConference : awayConference;
+        const winnerConference = (winner === home) ? homeConference : awayConference;
+        const loserConference = (winner === home) ? awayConference : homeConference;
         if (homeConference == awayConference){
           // check conference tier
           const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
@@ -123,8 +132,8 @@ function dailySync(isoDate) {
             points = (confDiff + 1) * 2;
           }
         }
-        if (top25.includes(winner)){
-          if (top25.indexOf(winner) < 10) {
+        if (top25.includes(loser)){
+          if (top25.indexOf(loser) < 10) {
             points = points + 5;
           }
           else {
