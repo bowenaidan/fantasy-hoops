@@ -3,6 +3,7 @@ const NCAA_API_BASE = 'https://ncaa-api.henrygd.me'; // public host (5 rps)
 const SHEET_POINTS = 'Point Structure';
 const SHEET_STANDINGS = 'Standings';
 const SHEET_DRAFT = '2025-2026 DRAFT';
+const PROCESSED_GAME_KEYS_PROP = 'processedGameKeys';
 
 // EDIT: define your tier lists (adjust to your league)
 const HIGH_MAJOR = new Set([
@@ -75,6 +76,55 @@ function normalizeSchoolName_(s) {
     .replace(/\bState\b/g, 'St.')
 }
 
+function getGameKey_(game) {
+  if (!game) return null;
+  const candidates = [
+    game.id,
+    game.gameId,
+    game.url,
+    game.gameUrl,
+    game.boxscoreUrl,
+    game.summaryUrl
+  ];
+  for (const candidate of candidates) {
+    if (candidate) return candidate.toString();
+  }
+  const home = ((game.home || {}).names || {}).short || ((game.home || {}).names || {}).full;
+  const away = ((game.away || {}).names || {}).short || ((game.away || {}).names || {}).full;
+  const startEpoch = game.startTimeEpoch || game.gameStartEpoch || game.startTime || game.startDate;
+  if (home && away && startEpoch) {
+    return `${startEpoch}:${home}:${away}`;
+  }
+  if (home && away) {
+    return `${home}:${away}`;
+  }
+  return null;
+}
+
+function loadProcessedGameKeys_() {
+  try {
+    const properties = PropertiesService.getDocumentProperties();
+    const stored = properties.getProperty(PROCESSED_GAME_KEYS_PROP);
+    if (!stored) {
+      return new Set();
+    }
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed)) {
+      return new Set(parsed);
+    }
+  } catch (err) {
+    Logger.log('Failed to load processed game keys; resetting store.');
+  }
+  PropertiesService.getDocumentProperties().deleteProperty(PROCESSED_GAME_KEYS_PROP);
+  return new Set();
+}
+
+function saveProcessedGameKeys_(processedGameSet) {
+  const properties = PropertiesService.getDocumentProperties();
+  const serialized = JSON.stringify(Array.from(processedGameSet));
+  properties.setProperty(PROCESSED_GAME_KEYS_PROP, serialized);
+}
+
 function dailySync(isoDate) {
   var pointMap = new Map();
   // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
@@ -83,11 +133,16 @@ function dailySync(isoDate) {
   const top25 = parseApPoll_(top25Raw);
   Logger.log(top25);
   if (!dayGames || !dayGames.games) return;
+  const processedGameSet = loadProcessedGameKeys_();
   const roster = ROSTER;
   for (const team of roster) {
-    for( const games of dayGames.games){
+    let points = 0;
+    for (const games of dayGames.games) {
       if (games.game.currentPeriod == "FINAL"){
-        var points = 0;
+        const gameKey = getGameKey_(games.game);
+        if (gameKey && processedGameSet.has(gameKey)) {
+          continue;
+        }
         const home = games.game.home.names.short;
         const away = games.game.away.names.short;
         const winner = games.game.home.winner ? home : away;
@@ -97,14 +152,17 @@ function dailySync(isoDate) {
           const awayConference = games.game.away.conferences[0].conferenceSeo;
           const winnerConference = (winner === home) ? homeConference : awayConference;
           const loserConference = (winner === home) ? awayConference : homeConference;
+          let gamePoints = 0;
           if (homeConference == awayConference){
             // check conference tier
-            const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
-                            HIGH_MID_MAJOR.has(homeConference) ? highMid :
-                            TRUE_MID_MAJOR.has(homeConference) ? trueMid :
-                            LOW_MAJOR.has(homeConference) ? lowMajor :
+            const tier = HIGH_MAJOR.has(homeConference) ? 'highMajor' :
+                            HIGH_MID_MAJOR.has(homeConference) ? 'highMid' :
+                            TRUE_MID_MAJOR.has(homeConference) ? 'trueMid' :
+                            LOW_MAJOR.has(homeConference) ? 'lowMajor' :
                             null;
-            points = CONF_POINTS[tier][winner === 'home' ? 'home' : 'road'];
+            if (tier) {
+              gamePoints = CONF_POINTS[tier][winner === home ? 'home' : 'road'];
+            }
           }
           else {
             const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
@@ -119,19 +177,23 @@ function dailySync(isoDate) {
                             -1;
             const confDiff = loserTier - winnerTier;
             if (confDiff + 1 > 0) {
-              points = (confDiff + 1) * 2;
+              gamePoints = (confDiff + 1) * 2;
             }
             if (winnerTier == -1) {
-              points = points - 4;
+              gamePoints = gamePoints - 4;
             }
           }
           if (top25.includes(loser.replace(/\s*\(.*?\).*/, '').trim())){
             if (top25.indexOf(loser.replace(/\s*\(.*?\).*/, '').trim()) < 10) {
-              points = points + 5;
+              gamePoints = gamePoints + 5;
             }
             else {
-              points = points + 2.5;
+              gamePoints = gamePoints + 2.5;
             }
+          }
+          points += gamePoints;
+          if (gameKey) {
+            processedGameSet.add(gameKey);
           }
           break;
         }
@@ -142,6 +204,7 @@ function dailySync(isoDate) {
   }
   Logger.log(JSON.stringify(Array.from(pointMap), null, 2));
   updateStandings_(pointMap);
+  saveProcessedGameKeys_(processedGameSet);
 }
 
 function updateStandings_(pointMap) {
