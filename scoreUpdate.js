@@ -2,7 +2,7 @@
 const NCAA_API_BASE = 'https://ncaa-api.henrygd.me'; // public host (5 rps)
 const SHEET_POINTS = 'Point Structure';
 const SHEET_STANDINGS = '2025-2026 Standings';
-const SHEET_DRAFT = '2025-2026 DRAFT'; // source of rosters
+const SHEET_DRAFT = '2025-2026 DRAFT';
 
 // EDIT: define your tier lists (adjust to your league)
 const HIGH_MAJOR = new Set([
@@ -89,6 +89,7 @@ function normalizeSchoolName_(s) {
 }
 
 function dailySync(isoDate) {
+  var pointMap = new Map();
   // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
   const top25Raw = fetchJson_(`${NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`);
@@ -147,7 +148,9 @@ function dailySync(isoDate) {
       }
     }
     Logger.log(team + ": " + points);
+    pointMap.set(team, points);
   }
+  Logger.log(JSON.stringify(Array.from(pointMap), null, 2));
 }
 
 const d = new Date();
