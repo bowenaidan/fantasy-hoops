@@ -69,63 +69,6 @@ function rebuildSeason(fromISO, toISO) {
   }
 }
 
-/***** CORE *****/
-function syncDay(isoDate, roster = null) {
-  if (!roster) roster = getRosterFromDraft_();
-
-  // 1) fetch daily scoreboard → game IDs
-  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate.replace(/-/g,'/')}`);
-  if (!dayGames || !dayGames.games) return;
-
-  // 2) build conference lookup (schools → conference)
-  const schoolIndex = getSchoolIndex_(); // cached
-
-  // 3) compute points by game
-  const pointsByManager = new Map(); // manager => points delta
-
-  for (const g of dayGames.games) {
-    const gameId = g.id || g.game?.id || g.url?.split('/').pop();
-    if (!gameId) continue;
-
-    const box = fetchJson_(`${NCAA_API_BASE}/game/${gameId}/boxscore`);
-    if (!box) continue;
-
-    // Determine winner + home/away
-    const home = box.teams?.find(t => (t.homeAway || t.side) === 'home') || box.home;
-    const away = box.teams?.find(t => (t.homeAway || t.side) === 'away') || box.away;
-    if (!home || !away) continue;
-
-    const homePts = safeScore_(home);
-    const awayPts = safeScore_(away);
-    let winner = null, winnerSide = null;
-    if (homePts > awayPts) { winner = home; winnerSide = 'home'; }
-    else if (awayPts > homePts) { winner = away; winnerSide = 'away'; }
-    else continue; // tie or no final
-
-    const winnerName = normalizeSchoolName_(winner?.school || winner?.name);
-    const conf = schoolIndex.get(winnerName)?.conference || '';
-
-    // tier → points
-    const tier = HIGH_MAJOR.has(conf) ? 'highMajor'
-               : HIGH_MID_MAJOR.has(conf) ? 'highMid'
-               : null;
-
-    if (tier) {
-      const pts = CONF_POINTS[tier][winnerSide === 'home' ? 'home' : 'road'];
-      awardPoints_(pointsByManager, roster, winnerName, pts);
-    }
-
-    // Bonus: postseason rounds (if scoreboard tags the round)
-    const roundLabel = g.round || box.round || null;
-    if (roundLabel) {
-      const ps = postseasonFromLabel_(roundLabel);
-      if (ps) awardPoints_(pointsByManager, roster, winnerName, ps);
-    }
-  }
-
-  // 4) post results into Standings
-  applyPointsToStandings_(pointsByManager);
-}
 
 /***** HELPERS *****/
 function getRosterFromDraft_() {
@@ -246,9 +189,18 @@ function fetchJson_(url) {
 
 
 
-function dailySync(){
+function dailySync(isoDate) {
+    // default to yesterday
+    if (!isoDate) {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        isoDate = `${yyyy}-${mm}-${dd}`;
+    }
     // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
-    const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate.replace(/-/g,'/')}`);
+    const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate.replace(/-/g,'/')}/all-conf`);
     const top25Raw = fetchJson_(`{NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`);
     const top25 = parseApPoll_(top25Raw);
     if (!dayGames || !dayGames.games) return;
