@@ -86,57 +86,59 @@ function dailySync(isoDate) {
   const roster = ROSTER;
   for (const team of roster) {
     for( const games of dayGames.games){
-      var points = 0;
-      const home = games.game.home.names.short;
-      const away = games.game.away.names.short;
-      const winner = games.game.home.winner ? home : away;
-      const loser = games.game.home.winner ? away : home;
-      if (winner == team){
-        const homeConference = games.game.home.conferences[0].conferenceSeo;
-        const awayConference = games.game.away.conferences[0].conferenceSeo;
-        const winnerConference = (winner === home) ? homeConference : awayConference;
-        const loserConference = (winner === home) ? awayConference : homeConference;
-        if (homeConference == awayConference){
-          // check conference tier
-          const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
-                          HIGH_MID_MAJOR.has(homeConference) ? highMid :
-                          TRUE_MID_MAJOR.has(homeConference) ? trueMid :
-                          LOW_MAJOR.has(homeConference) ? lowMajor :
-                          null;
-          points = CONF_POINTS[tier][winner === 'home' ? 'home' : 'road'];
-        }
-        else {
-          const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
-                          HIGH_MID_MAJOR.has(winnerConference) ? 2 :
-                          TRUE_MID_MAJOR.has(winnerConference) ? 1 :
-                          LOW_MAJOR.has(winnerConference) ? 0 :
-                          -1;
-          const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
-                          HIGH_MID_MAJOR.has(loserConference) ? 2 :
-                          TRUE_MID_MAJOR.has(loserConference) ? 1 :
-                          LOW_MAJOR.has(loserConference) ? 0 :
-                          -1;
-          const confDiff = loserTier - winnerTier;
-          if (confDiff + 1 > 0) {
-            points = (confDiff + 1) * 2;
-          }
-          if (winnerTier == -1) {
-            points = points - 4;
-          }
-        }
-        if (top25.includes(loser.replace(/\s*\(.*?\).*/, '').trim())){
-          if (top25.indexOf(loser.replace(/\s*\(.*?\).*/, '').trim()) < 10) {
-            points = points + 5;
+      if (games.game.currentPeriod == "FINAL"){
+        var points = 0;
+        const home = games.game.home.names.short;
+        const away = games.game.away.names.short;
+        const winner = games.game.home.winner ? home : away;
+        const loser = games.game.home.winner ? away : home;
+        if (winner == team){
+          const homeConference = games.game.home.conferences[0].conferenceSeo;
+          const awayConference = games.game.away.conferences[0].conferenceSeo;
+          const winnerConference = (winner === home) ? homeConference : awayConference;
+          const loserConference = (winner === home) ? awayConference : homeConference;
+          if (homeConference == awayConference){
+            // check conference tier
+            const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
+                            HIGH_MID_MAJOR.has(homeConference) ? highMid :
+                            TRUE_MID_MAJOR.has(homeConference) ? trueMid :
+                            LOW_MAJOR.has(homeConference) ? lowMajor :
+                            null;
+            points = CONF_POINTS[tier][winner === 'home' ? 'home' : 'road'];
           }
           else {
-            points = points + 2.5;
+            const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
+                            HIGH_MID_MAJOR.has(winnerConference) ? 2 :
+                            TRUE_MID_MAJOR.has(winnerConference) ? 1 :
+                            LOW_MAJOR.has(winnerConference) ? 0 :
+                            -1;
+            const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
+                            HIGH_MID_MAJOR.has(loserConference) ? 2 :
+                            TRUE_MID_MAJOR.has(loserConference) ? 1 :
+                            LOW_MAJOR.has(loserConference) ? 0 :
+                            -1;
+            const confDiff = loserTier - winnerTier;
+            if (confDiff + 1 > 0) {
+              points = (confDiff + 1) * 2;
+            }
+            if (winnerTier == -1) {
+              points = points - 4;
+            }
           }
+          if (top25.includes(loser.replace(/\s*\(.*?\).*/, '').trim())){
+            if (top25.indexOf(loser.replace(/\s*\(.*?\).*/, '').trim()) < 10) {
+              points = points + 5;
+            }
+            else {
+              points = points + 2.5;
+            }
+          }
+          break;
         }
-        break;
       }
     }
-  Logger.log(team + ": " + points);
-  pointMap.set(team, points);
+    Logger.log(team + ": " + points);
+    pointMap.set(team, points);
   }
   Logger.log(JSON.stringify(Array.from(pointMap), null, 2));
   updateStandings_(pointMap);
