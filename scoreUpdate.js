@@ -190,69 +190,71 @@ function fetchJson_(url) {
 
 
 function dailySync(isoDate) {
-    // default to yesterday
-    if (!isoDate) {
-        const d = new Date();
-        d.setDate(d.getDate() - 1);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        isoDate = `${yyyy}-${mm}-${dd}`;
-    }
-    // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
-    const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate.replace(/-/g,'/')}/all-conf`);
-    const top25Raw = fetchJson_(`{NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`);
-    const top25 = parseApPoll_(top25Raw);
-    if (!dayGames || !dayGames.games) return;
-
-    for (const team of roster) {
-        for( const game of dayGames.games){
-            let points = 0;
-            const home = game.home.names.short;
-            const away = game.away.names.short;
-            const winner = game.home.winner ? home : away;
-            const loser = game.home.winner ? away : home;
-            if (winner == team){
-                const homeConference = game.home.conferences.conferenceSeo;
-                const awayConference = game.home.conferences.conferenceSeo;
-                winnerConference = winner === 'home' ? homeConference : awayConference;
-                if (homeConference == awayConference){
-                    // check conference tier
-                    const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
-                                    HIGH_MID_MAJOR.has(homeConference) ? highMid :
-                                    TRUE_MID_MAJOR.has(homeConference) ? trueMid :
-                                    LOW_MAJOR.has(homeConference) ? lowMajor :
-                                    null;
-                    points = CONF_POINTS[tier][winnerSide === 'home' ? 'home' : 'road'];
-                }
-                else {
-                    // non conference tier
-                    const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
-                                    HIGH_MID_MAJOR.has(winnerConference) ? 2 :
-                                    TRUE_MID_MAJOR.has(winnerConference) ? 1 :
-                                    LOW_MAJOR.has(winnerConference) ? 0 :
-                                    null;
-                    const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
-                                    HIGH_MID_MAJOR.has(loserConference) ? 2 :
-                                    TRUE_MID_MAJOR.has(loserConference) ? 1 :
-                                    LOW_MAJOR.has(loserConference) ? 0 :
-                                    null;
-                    const confDiff = loserTier - winnerTier;
-                    if (confDiff + 1 > 0) {
-                        points = (confDiff + 1) * 2;
-                    }
-                }
-                if (top25.includes(winner)){
-                    if (top25.indexOf(winner) < 10) {
-                        points = points + 5;
-                    }
-                    else {
-                        points = points + 2.5;
-                    }
-                }
-            }
+  // default to yesterday
+  if (!isoDate) {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    isoDate = `${yyyy}-${mm}-${dd}`;
+  }
+  // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
+  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/2025/11/07/all-conf`);
+  const top25Raw = fetchJson_(`${NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`);
+  const top25 = parseApPoll_(top25Raw);
+  if (!dayGames || !dayGames.games) return;
+  const roster = ROSTER;
+  for (const team of roster) {
+    for( const games of dayGames.games){
+      var points = 0;
+      const home = games.game.home.names.short;
+      const away = games.game.away.names.short;
+      const winner = games.game.home.winner ? home : away;
+      const loser = games.game.home.winner ? away : home;
+      if (winner == team){
+        const homeConference = games.game.home.conferences[0].conferenceSeo;
+        const awayConference = games.game.away.conferences[0].conferenceSeo;
+        winnerConference = winner === 'home' ? homeConference : awayConference;
+        loserConference = loser === 'home' ? homeConference : awayConference;
+        if (homeConference == awayConference){
+          // check conference tier
+          const tier = HIGH_MAJOR.has(homeConference) ? highMajor :
+                          HIGH_MID_MAJOR.has(homeConference) ? highMid :
+                          TRUE_MID_MAJOR.has(homeConference) ? trueMid :
+                          LOW_MAJOR.has(homeConference) ? lowMajor :
+                          null;
+          points = CONF_POINTS[tier][winner === 'home' ? 'home' : 'road'];
         }
+        else {
+          const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
+                          HIGH_MID_MAJOR.has(winnerConference) ? 2 :
+                          TRUE_MID_MAJOR.has(winnerConference) ? 1 :
+                          LOW_MAJOR.has(winnerConference) ? 0 :
+                          null;
+          const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
+                          HIGH_MID_MAJOR.has(loserConference) ? 2 :
+                          TRUE_MID_MAJOR.has(loserConference) ? 1 :
+                          LOW_MAJOR.has(loserConference) ? 0 :
+                          null;
+          const confDiff = loserTier - winnerTier;
+          if (confDiff + 1 > 0) {
+            points = (confDiff + 1) * 2;
+          }
+        }
+        if (top25.includes(winner)){
+          if (top25.indexOf(winner) < 10) {
+            points = points + 5;
+          }
+          else {
+            points = points + 2.5;
+          }
+        }
+        break;
+      }
     }
+    Logger.log(team + ": " + points);
+  }
 }
 
 function parseApPoll_(json) {
