@@ -109,58 +109,46 @@
         backdrop-filter: blur(10px);
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        overflow: hidden;
+      .manager-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .manager-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 20px;
         border-radius: 18px;
+        border: 1px solid var(--card-border);
+        background: rgba(56, 189, 248, 0.08);
+        transition: transform 0.2s ease, background 0.2s ease;
       }
 
-      thead {
-        background: var(--table-header-bg);
+      .manager-item:nth-child(odd) {
+        background: rgba(56, 189, 248, 0.12);
       }
 
-      th,
-      td {
-        padding: 16px 18px;
-        text-align: left;
-        border-bottom: 1px solid var(--table-border);
+      .manager-item:hover {
+        transform: translateY(-2px);
+        background: rgba(56, 189, 248, 0.18);
       }
 
-      th {
-        font-size: 0.95rem;
+      .manager-name {
+        font-size: 1.05rem;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-secondary);
+        letter-spacing: 0.01em;
       }
 
-      tbody tr:last-child td {
-        border-bottom: none;
-      }
-
-      tbody tr {
-        transition: background 0.2s ease, transform 0.2s ease;
-      }
-
-      tbody tr:hover {
-        background: var(--table-row-hover);
-        transform: translateY(-1px);
-      }
-
-      tbody td {
-        font-size: 1rem;
-        color: var(--text-primary);
-      }
-
-      tbody td[data-label]::before {
-        content: attr(data-label);
-        display: none;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-secondary);
-        margin-bottom: 4px;
+      .manager-score {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: 0.02em;
       }
 
       .empty-state {
@@ -187,35 +175,17 @@
           border-radius: 20px;
         }
 
-        table,
-        thead,
-        tbody,
-        th,
-        td,
-        tr {
-          display: block;
-          width: 100%;
-        }
-
-        thead {
-          display: none;
-        }
-
-        tbody tr {
-          margin-bottom: 16px;
-          border: 1px solid var(--table-border);
-          border-radius: 16px;
+        .manager-item {
           padding: 16px;
-          background: rgba(15, 23, 42, 0.3);
+          border-radius: 16px;
         }
 
-        tbody td {
-          border: none;
-          padding: 8px 0;
+        .manager-name {
+          font-size: 1rem;
         }
 
-        tbody td[data-label]::before {
-          display: block;
+        .manager-score {
+          font-size: 1.05rem;
         }
       }
     </style>
@@ -231,45 +201,26 @@
       </header>
 
       <section class="card">
-        <? const headers = (standings && standings.headers) ? standings.headers : []; ?>
-        <? const rows = (standings && standings.rows) ? standings.rows : []; ?>
-        <? if (rows.length === 0) { ?>
+        <? const managerScores = (typeof managerScores !== 'undefined' && Array.isArray(managerScores)) ? managerScores : []; ?>
+        <? if (managerScores.length === 0) { ?>
           <div class="empty-state">
-            No standings data is available right now. Check back soon!
+            No manager standings are available right now. Check back soon!
           </div>
         <? } else { ?>
-          <table role="table" aria-label="Fantasy Hoops Standings">
-            <? if (headers.length > 0) { ?>
-              <thead>
-                <tr>
-                  <? headers.forEach(function(header) { ?>
-                    <th scope="col">
-                      <? if (header) { ?>
-                        <?!= header ?>
-                      <? } else { ?>
-                        &nbsp;
-                      <? } ?>
-                    </th>
-                  <? }); ?>
-                </tr>
-              </thead>
-            <? } ?>
-            <tbody>
-              <? rows.forEach(function(row) { ?>
-                <tr>
-                  <? row.forEach(function(cell, index) { ?>
-                    <td data-label="<?= headers[index] || ('Column ' + (index + 1)) ?>">
-                      <? if (cell) { ?>
-                        <?!= cell ?>
-                      <? } else { ?>
-                        &nbsp;
-                      <? } ?>
-                    </td>
-                  <? }); ?>
-                </tr>
-              <? }); ?>
-            </tbody>
-          </table>
+          <ul class="manager-list">
+            <? managerScores.forEach(function(entry) { ?>
+              <li class="manager-item">
+                <span class="manager-name"><?!= entry.name ?></span>
+                <span class="manager-score">
+                  <? if (entry.score || entry.score === 0) { ?>
+                    <?!= entry.score ?>
+                  <? } else { ?>
+                    &mdash;
+                  <? } ?>
+                </span>
+              </li>
+            <? }); ?>
+          </ul>
         <? } ?>
       </section>
 
