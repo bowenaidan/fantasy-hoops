@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <title>Fantasy Hoops Standings</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg-gradient-start: #0f172a;
+        --bg-gradient-end: #1e293b;
+        --card-bg: rgba(15, 23, 42, 0.75);
+        --card-border: rgba(148, 163, 184, 0.2);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.15);
+        --table-header-bg: rgba(56, 189, 248, 0.12);
+        --table-row-hover: rgba(56, 189, 248, 0.08);
+        --table-border: rgba(148, 163, 184, 0.25);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg-gradient-start: #f8fafc;
+          --bg-gradient-end: #e2e8f0;
+          --card-bg: rgba(255, 255, 255, 0.92);
+          --card-border: rgba(15, 23, 42, 0.08);
+          --text-primary: #0f172a;
+          --text-secondary: #475569;
+          --accent: #0284c7;
+          --accent-soft: rgba(2, 132, 199, 0.12);
+          --table-header-bg: rgba(2, 132, 199, 0.1);
+          --table-row-hover: rgba(2, 132, 199, 0.08);
+          --table-border: rgba(15, 23, 42, 0.08);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(160deg, var(--bg-gradient-start), var(--bg-gradient-end));
+        min-height: 100vh;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        color: var(--text-primary);
+        padding: 48px 24px;
+      }
+
+      .container {
+        width: min(1200px, 100%);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+        backdrop-filter: blur(12px);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 3vw, 3rem);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .subheading {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 18px;
+      }
+
+      thead {
+        background: var(--table-header-bg);
+      }
+
+      th,
+      td {
+        padding: 16px 18px;
+        text-align: left;
+        border-bottom: 1px solid var(--table-border);
+      }
+
+      th {
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      tbody tr {
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+
+      tbody tr:hover {
+        background: var(--table-row-hover);
+        transform: translateY(-1px);
+      }
+
+      tbody td {
+        font-size: 1rem;
+        color: var(--text-primary);
+      }
+
+      tbody td[data-label]::before {
+        content: attr(data-label);
+        display: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+      }
+
+      footer {
+        text-align: right;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 32px 16px;
+        }
+
+        header,
+        .card {
+          padding: 24px;
+          border-radius: 20px;
+        }
+
+        table,
+        thead,
+        tbody,
+        th,
+        td,
+        tr {
+          display: block;
+          width: 100%;
+        }
+
+        thead {
+          display: none;
+        }
+
+        tbody tr {
+          margin-bottom: 16px;
+          border: 1px solid var(--table-border);
+          border-radius: 16px;
+          padding: 16px;
+          background: rgba(15, 23, 42, 0.3);
+        }
+
+        tbody td {
+          border: none;
+          padding: 8px 0;
+        }
+
+        tbody td[data-label]::before {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="badge">Fantasy Hoops League</div>
+        <h1>Current Standings</h1>
+        <div class="subheading">
+          Updated <?= generatedAt ?>
+        </div>
+      </header>
+
+      <section class="card">
+        <? const headers = (standings && standings.headers) ? standings.headers : []; ?>
+        <? const rows = (standings && standings.rows) ? standings.rows : []; ?>
+        <? if (rows.length === 0) { ?>
+          <div class="empty-state">
+            No standings data is available right now. Check back soon!
+          </div>
+        <? } else { ?>
+          <table role="table" aria-label="Fantasy Hoops Standings">
+            <? if (headers.length > 0) { ?>
+              <thead>
+                <tr>
+                  <? headers.forEach(function(header) { ?>
+                    <th scope="col">
+                      <? if (header) { ?>
+                        <?!= header ?>
+                      <? } else { ?>
+                        &nbsp;
+                      <? } ?>
+                    </th>
+                  <? }); ?>
+                </tr>
+              </thead>
+            <? } ?>
+            <tbody>
+              <? rows.forEach(function(row) { ?>
+                <tr>
+                  <? row.forEach(function(cell, index) { ?>
+                    <td data-label="<?= headers[index] || ('Column ' + (index + 1)) ?>">
+                      <? if (cell) { ?>
+                        <?!= cell ?>
+                      <? } else { ?>
+                        &nbsp;
+                      <? } ?>
+                    </td>
+                  <? }); ?>
+                </tr>
+              <? }); ?>
+            </tbody>
+          </table>
+        <? } ?>
+      </section>
+
+      <footer>
+        Generated directly from the Standings sheet.
+      </footer>
+    </div>
+  </body>
+</html>
