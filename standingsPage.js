@@ -1,18 +1,18 @@
 const MANAGERS = ["Jackson", "Aidan", "Caleb", "Camden", "John", "Kevin", "Ethan", "Will", "Duy", "Eddie"];
 
-const COPY_SHEET_STANDINGS = "Copy of Standings";
+// const COPY_SHEET_STANDINGS = "Copy of Standings";
 
 function getStandingsData_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) {
     throw new Error('No active spreadsheet found.');
   }
-  if (typeof COPY_SHEET_STANDINGS === 'undefined' || !COPY_SHEET_STANDINGS) {
-    throw new Error('COPY_SHEET_STANDINGS constant is not defined.');
+  if (typeof SHEET_STANDINGS === 'undefined' || !SHEET_STANDINGS) {
+    throw new Error('SHEET_STANDINGS constant is not defined.');
   }
-  const sheet = ss.getSheetByName(COPY_SHEET_STANDINGS);
+  const sheet = ss.getSheetByName(SHEET_STANDINGS);
   if (!sheet) {
-    throw new Error(`Sheet not found: ${COPY_SHEET_STANDINGS}`);
+    throw new Error(`Sheet not found: ${SHEET_STANDINGS}`);
   }
   const range = sheet.getDataRange();
   const values = range.getDisplayValues();
