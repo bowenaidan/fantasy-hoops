@@ -50,10 +50,10 @@ function getStandingsData_() {
 
 function extractManagerScores_(standings, managers) {
   if (!standings || !Array.isArray(standings.rows) || standings.rows.length === 0) {
-    return [];
+    return { headers: [], managerColumnIndex: -1, scoreColumnIndex: -1, entries: [] };
   }
   if (!Array.isArray(managers) || managers.length === 0) {
-    return [];
+    return { headers: [], managerColumnIndex: -1, scoreColumnIndex: -1, entries: [] };
   }
 
   const headers = Array.isArray(standings.headers) ? standings.headers : [];
@@ -87,6 +87,14 @@ function extractManagerScores_(standings, managers) {
     }
   }
 
+  const sanitizedHeaders = headers.map((header, idx) => {
+    if (header === null || typeof header === 'undefined') {
+      return `Column ${idx + 1}`;
+    }
+    const stringValue = header.toString();
+    return stringValue.trim() === '' ? `Column ${idx + 1}` : stringValue;
+  });
+
   const rowsByManager = new Map();
   rows.forEach(row => {
     if (!Array.isArray(row)) {
@@ -97,14 +105,21 @@ function extractManagerScores_(standings, managers) {
     if (!normalizedName) {
       return;
     }
-    rowsByManager.set(normalizedName, row);
+    const limitedRow = sanitizedHeaders.map((_, idx) => {
+      const value = safeIndex(idx, row);
+      if (value === null || typeof value === 'undefined') {
+        return '';
+      }
+      return value;
+    });
+    rowsByManager.set(normalizedName, limitedRow);
   });
 
-  return managers.map(name => {
+  const entries = managers.map(name => {
     const trimmedName = (name || '').toString().trim();
-    const row = rowsByManager.get(trimmedName.toLowerCase());
+    const row = rowsByManager.get(trimmedName.toLowerCase()) || sanitizedHeaders.map(() => '');
     let score = '';
-    if (row && scoreIdx !== -1) {
+    if (Array.isArray(row) && scoreIdx !== -1) {
       const value = safeIndex(scoreIdx, row);
       const stringValue = (value || '').toString();
       if (stringValue.trim() !== '') {
@@ -113,9 +128,17 @@ function extractManagerScores_(standings, managers) {
     }
     return {
       name: trimmedName,
-      score: score
+      score,
+      row
     };
   });
+
+  return {
+    headers: sanitizedHeaders,
+    managerColumnIndex: managerIdx,
+    scoreColumnIndex: scoreIdx,
+    entries
+  };
 }
 
 function doGet() {

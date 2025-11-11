@@ -120,8 +120,9 @@
 
       .manager-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
+        gap: 24px;
         padding: 18px 20px;
         border-radius: 18px;
         border: 1px solid var(--card-border);
@@ -138,6 +139,13 @@
         background: rgba(56, 189, 248, 0.18);
       }
 
+      .manager-main {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+      }
+
       .manager-name {
         font-size: 1.05rem;
         font-weight: 600;
@@ -149,6 +157,121 @@
         font-weight: 700;
         color: var(--accent);
         letter-spacing: 0.02em;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+      }
+
+      .manager-score-label {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+      }
+
+      .manager-breakdown {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .matchup-groups {
+        display: grid;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .matchup-card {
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: rgba(148, 163, 184, 0.15);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .matchup-card__header {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .matchup-card__label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
+      .matchup-card__name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .matchup-card__metrics {
+        display: grid;
+        gap: 8px;
+      }
+
+      .matchup-card__metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        padding-top: 6px;
+      }
+
+      .matchup-card__metric:first-child {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .matchup-card__metric-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        font-size: 0.7rem;
+      }
+
+      .matchup-card__metric-value {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .score-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .score-pill__label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .score-pill__value {
+        font-weight: 600;
+        color: var(--text-primary);
       }
 
       .empty-state {
@@ -156,6 +279,69 @@
         padding: 48px 24px;
         color: var(--text-secondary);
         font-size: 1.05rem;
+      }
+
+      .scoreboard-table-wrapper {
+        margin-top: 28px;
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .scoreboard-scroll {
+        overflow-x: auto;
+      }
+
+      .score-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(15, 23, 42, 0.35);
+      }
+
+      .score-table thead {
+        background: var(--table-header-bg);
+        backdrop-filter: blur(8px);
+      }
+
+      .score-table th,
+      .score-table td {
+        padding: 14px 18px;
+        text-align: left;
+        border-bottom: 1px solid var(--table-border);
+      }
+
+      .score-table th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+      }
+
+      .score-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .score-table tbody tr:hover {
+        background: var(--table-row-hover);
+      }
+
+      .score-table td {
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+
+      .score-table th:first-child,
+      .score-table td:first-child {
+        position: sticky;
+        left: 0;
+        background: inherit;
+        backdrop-filter: blur(8px);
+        z-index: 1;
+      }
+
+      .is-primary-score {
+        color: var(--accent);
+        font-weight: 700;
       }
 
       footer {
@@ -178,6 +364,9 @@
         .manager-item {
           padding: 16px;
           border-radius: 16px;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 16px;
         }
 
         .manager-name {
@@ -186,6 +375,22 @@
 
         .manager-score {
           font-size: 1.05rem;
+        }
+        .manager-main {
+          gap: 6px;
+        }
+
+        .manager-breakdown {
+          gap: 6px;
+        }
+
+        .matchup-card {
+          padding: 12px 14px;
+        }
+
+        .score-table th,
+        .score-table td {
+          padding: 12px 14px;
         }
       }
     </style>
@@ -201,19 +406,181 @@
       </header>
 
       <section class="card">
-        <? const managerScores = (typeof managerScores !== 'undefined' && Array.isArray(managerScores)) ? managerScores : []; ?>
-        <? if (managerScores.length === 0) { ?>
+        <?
+          const managerData = (managerScores && typeof managerScores === 'object' && Array.isArray(managerScores.entries))
+            ? managerScores
+            : {
+                headers: [],
+                managerColumnIndex: -1,
+                scoreColumnIndex: -1,
+                entries: Array.isArray(managerScores) ? managerScores : []
+              };
+          const entries = Array.isArray(managerData.entries) ? managerData.entries : [];
+          const headers = Array.isArray(managerData.headers) ? managerData.headers : [];
+          const managerColumnIndex = (typeof managerData.managerColumnIndex === 'number') ? managerData.managerColumnIndex : -1;
+          const scoreColumnIndex = (typeof managerData.scoreColumnIndex === 'number') ? managerData.scoreColumnIndex : -1;
+          const allColumns = headers.map(function(header, idx) {
+            var label = (header && header.toString().trim() !== '') ? header : ('Column ' + (idx + 1));
+            return { label: label, index: idx };
+          });
+          const detailColumns = allColumns.filter(function(column) {
+            return column.index !== managerColumnIndex;
+          }).filter(function(column) {
+            return entries.some(function(entry) {
+              var row = Array.isArray(entry.row) ? entry.row : [];
+              var value = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
+              if (value === null || typeof value === 'undefined') {
+                return false;
+              }
+              if (typeof value === 'string') {
+                return value.trim() !== '';
+              }
+              return value !== '';
+            });
+          });
+          var primaryColumn = null;
+          if (scoreColumnIndex !== -1) {
+            primaryColumn = detailColumns.find(function(column) { return column.index === scoreColumnIndex; }) || null;
+          }
+          if (!primaryColumn && detailColumns.length > 0) {
+            primaryColumn = detailColumns[0];
+          }
+          const secondaryColumns = primaryColumn
+            ? detailColumns.filter(function(column) { return column.index !== primaryColumn.index; })
+            : detailColumns;
+        ?>
+        <? if (entries.length === 0) { ?>
           <div class="empty-state">
             No manager standings are available right now. Check back soon!
           </div>
         <? } else { ?>
           <ul class="manager-list">
-            <? managerScores.forEach(function(entry) { ?>
+            <? entries.forEach(function(rawEntry) {
+                 var entry = (rawEntry && typeof rawEntry === 'object') ? rawEntry : { name: rawEntry, score: '', row: [] };
+                 var row = Array.isArray(entry.row) ? entry.row : [];
+                 var primaryValue = null;
+                 var hasPrimaryValue = false;
+                 if (primaryColumn) {
+                   primaryValue = (primaryColumn.index >= 0 && primaryColumn.index < row.length) ? row[primaryColumn.index] : '';
+                   if (primaryValue === null || typeof primaryValue === 'undefined') {
+                     primaryValue = '';
+                   }
+                   if (typeof primaryValue === 'string') {
+                     hasPrimaryValue = primaryValue.trim() !== '';
+                   } else {
+                     hasPrimaryValue = primaryValue !== '';
+                   }
+                 }
+                 var scoreValue = (typeof entry.score !== 'undefined') ? entry.score : '';
+                 var displayScore = hasPrimaryValue ? primaryValue : (scoreValue || scoreValue === 0 ? scoreValue : '');
+                 var hasDisplayScore = false;
+                 if (typeof displayScore === 'string') {
+                   hasDisplayScore = displayScore.trim() !== '';
+                 } else {
+                   hasDisplayScore = displayScore !== '' && displayScore !== null && typeof displayScore !== 'undefined';
+                 }
+            ?>
               <li class="manager-item">
-                <span class="manager-name"><?!= entry.name ?></span>
+                <div class="manager-main">
+                  <span class="manager-name"><?!= entry.name ?></span>
+                  <?
+                    var breakdownItems = [];
+                    var matchupGroups = [];
+                    var currentMatchup = null;
+                    var createMatchup = function(label, name) {
+                      var trimmed = (name && name.toString) ? name.toString().trim() : '';
+                      if (!trimmed) {
+                        currentMatchup = null;
+                        return;
+                      }
+                      currentMatchup = {
+                        label: label,
+                        name: name,
+                        metrics: []
+                      };
+                      matchupGroups.push(currentMatchup);
+                    };
+                    var pushMetric = function(column, value) {
+                      if (!currentMatchup) {
+                        breakdownItems.push({
+                          label: column.label,
+                          value: value
+                        });
+                        return;
+                      }
+                      currentMatchup.metrics.push({
+                        label: column.label,
+                        value: value
+                      });
+                    };
+                    secondaryColumns.forEach(function(column) {
+                      var columnValue = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
+                      if (columnValue === null || typeof columnValue === 'undefined') {
+                        columnValue = '';
+                      }
+                      var hasValue = false;
+                      if (typeof columnValue === 'string') {
+                        hasValue = columnValue.trim() !== '';
+                      } else {
+                        hasValue = columnValue !== '';
+                      }
+                      if (!hasValue) {
+                        return;
+                      }
+                      var normalizedLabel = (column.label || '').toString().trim().toLowerCase();
+                      var isManagerLabel = normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('team') !== -1 || normalizedLabel.indexOf('opponent') !== -1 || normalizedLabel.indexOf('matchup') !== -1 || normalizedLabel.indexOf('name') !== -1;
+                      var isScoreLike = normalizedLabel.indexOf('score') !== -1 || normalizedLabel.indexOf('points') !== -1 || normalizedLabel.indexOf('total') !== -1 || normalizedLabel.indexOf('result') !== -1 || normalizedLabel.indexOf('record') !== -1 || normalizedLabel.indexOf('diff') !== -1 || normalizedLabel.indexOf('spread') !== -1;
+                      if (isManagerLabel && !isScoreLike) {
+                        createMatchup(column.label, columnValue);
+                      } else if (currentMatchup) {
+                        pushMetric(column, columnValue);
+                      } else {
+                        breakdownItems.push({
+                          label: column.label,
+                          value: columnValue
+                        });
+                      }
+                    });
+                  ?>
+                  <? if (breakdownItems.length > 0) { ?>
+                    <div class="manager-breakdown">
+                      <? breakdownItems.forEach(function(item) { ?>
+                        <span class="score-pill">
+                          <span class="score-pill__label"><?!= item.label ?></span>
+                          <span class="score-pill__value"><?!= item.value ?></span>
+                        </span>
+                      <? }); ?>
+                    </div>
+                  <? } ?>
+                  <? if (matchupGroups.length > 0) { ?>
+                    <div class="matchup-groups">
+                      <? matchupGroups.forEach(function(group) { ?>
+                        <div class="matchup-card">
+                          <div class="matchup-card__header">
+                            <span class="matchup-card__label"><?!= group.label ?></span>
+                            <span class="matchup-card__name"><?!= group.name ?></span>
+                          </div>
+                          <? if (group.metrics && group.metrics.length > 0) { ?>
+                            <div class="matchup-card__metrics">
+                              <? group.metrics.forEach(function(metric) { ?>
+                                <div class="matchup-card__metric">
+                                  <span class="matchup-card__metric-label"><?!= metric.label ?></span>
+                                  <span class="matchup-card__metric-value"><?!= metric.value ?></span>
+                                </div>
+                              <? }); ?>
+                            </div>
+                          <? } ?>
+                        </div>
+                      <? }); ?>
+                    </div>
+                  <? } ?>
+                </div>
                 <span class="manager-score">
-                  <? if (entry.score || entry.score === 0) { ?>
-                    <?!= entry.score ?>
+                  <? if (primaryColumn) { ?>
+                    <span class="manager-score-label"><?!= primaryColumn.label ?></span>
+                  <? } ?>
+                  <? if (hasDisplayScore) { ?>
+                    <?!= displayScore ?>
                   <? } else { ?>
                     &mdash;
                   <? } ?>
@@ -221,6 +588,64 @@
               </li>
             <? }); ?>
           </ul>
+          <? if (detailColumns.length > 0) { ?>
+            <div class="scoreboard-table-wrapper">
+              <div class="scoreboard-scroll">
+                <table class="score-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Manager</th>
+                    <? detailColumns.forEach(function(column) { ?>
+                      <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= column.label ?></th>
+                    <? }); ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <? entries.forEach(function(rawEntry) {
+                       var entry = (rawEntry && typeof rawEntry === 'object') ? rawEntry : { name: rawEntry, score: '', row: [] };
+                       var row = Array.isArray(entry.row) ? entry.row : [];
+                  ?>
+                    <tr>
+                      <th scope="row"><?!= entry.name ?></th>
+                      <? detailColumns.forEach(function(column) {
+                           var value = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
+                           if (value === null || typeof value === 'undefined') {
+                             value = '';
+                           }
+                           var hasValue = false;
+                           if (typeof value === 'string') {
+                             hasValue = value.trim() !== '';
+                           } else {
+                             hasValue = value !== '';
+                           }
+                           if (!hasValue && column.index === scoreColumnIndex) {
+                             var fallbackScore = (typeof entry.score !== 'undefined') ? entry.score : '';
+                             if (typeof fallbackScore === 'string') {
+                               if (fallbackScore.trim() !== '') {
+                                 value = fallbackScore;
+                                 hasValue = true;
+                               }
+                             } else if (fallbackScore !== '' && fallbackScore !== null && typeof fallbackScore !== 'undefined') {
+                               value = fallbackScore;
+                               hasValue = true;
+                             }
+                           }
+                      ?>
+                        <td class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>">
+                          <? if (hasValue) { ?>
+                            <?!= value ?>
+                          <? } else { ?>
+                            &mdash;
+                          <? } ?>
+                        </td>
+                      <? }); ?>
+                    </tr>
+                  <? }); ?>
+                </tbody>
+                </table>
+              </div>
+            </div>
+          <? } ?>
         <? } ?>
       </section>
 
