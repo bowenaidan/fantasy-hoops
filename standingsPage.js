@@ -1,16 +1,18 @@
-const MANAGERS = ["Jackson", "Ethan", "Caleb", "Aidan", "Camden", "Will", "John", "Duy", "Kevin", "Eddie"];
+const MANAGERS = ["Jackson", "Aidan", "Caleb", "Camden", "John", "Kevin", "Ethan", "Will", "Duy", "Eddie"];
+
+const COPY_SHEET_STANDINGS = "Copy of Standings";
 
 function getStandingsData_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) {
     throw new Error('No active spreadsheet found.');
   }
-  if (typeof SHEET_STANDINGS === 'undefined' || !SHEET_STANDINGS) {
-    throw new Error('SHEET_STANDINGS constant is not defined.');
+  if (typeof COPY_SHEET_STANDINGS === 'undefined' || !COPY_SHEET_STANDINGS) {
+    throw new Error('COPY_SHEET_STANDINGS constant is not defined.');
   }
-  const sheet = ss.getSheetByName(SHEET_STANDINGS);
+  const sheet = ss.getSheetByName(COPY_SHEET_STANDINGS);
   if (!sheet) {
-    throw new Error(`Sheet not found: ${SHEET_STANDINGS}`);
+    throw new Error(`Sheet not found: ${COPY_SHEET_STANDINGS}`);
   }
   const range = sheet.getDataRange();
   const values = range.getDisplayValues();
@@ -60,6 +62,15 @@ function extractManagerScores_(standings, managers) {
   const rows = standings.rows;
   const normalize = value => (value || '').toString().trim().toLowerCase();
   const safeIndex = (idx, row) => (idx >= 0 && idx < row.length ? row[idx] : '');
+  const hasCellData = value => {
+    if (value === null || typeof value === 'undefined') {
+      return false;
+    }
+    if (typeof value === 'string') {
+      return value.trim() !== '';
+    }
+    return value !== '';
+  };
 
   let managerIdx = headers.findIndex(header => {
     const normalized = normalize(header);
@@ -95,14 +106,19 @@ function extractManagerScores_(standings, managers) {
     return stringValue.trim() === '' ? `Column ${idx + 1}` : stringValue;
   });
 
-  const rowsByManager = new Map();
+  const managerNameSet = new Set(
+    managers
+      .map(name => normalize(name))
+      .filter(Boolean)
+  );
+
+  const entriesByManager = new Map();
+  const emptyRow = () => sanitizedHeaders.map(() => '');
+  let activeManagerKey = null;
+
   rows.forEach(row => {
     if (!Array.isArray(row)) {
-      return;
-    }
-    const nameCell = safeIndex(managerIdx, row);
-    const normalizedName = normalize(nameCell);
-    if (!normalizedName) {
+      activeManagerKey = null;
       return;
     }
     const limitedRow = sanitizedHeaders.map((_, idx) => {
@@ -112,12 +128,36 @@ function extractManagerScores_(standings, managers) {
       }
       return value;
     });
-    rowsByManager.set(normalizedName, limitedRow);
+
+    const rowHasData = limitedRow.some(hasCellData);
+    if (!rowHasData) {
+      activeManagerKey = null;
+      return;
+    }
+
+    const nameCell = safeIndex(managerIdx, row);
+    const normalizedName = normalize(nameCell);
+
+    if (managerNameSet.has(normalizedName)) {
+      const existing = entriesByManager.get(normalizedName) || { managerRow: emptyRow(), teams: [] };
+      existing.managerRow = limitedRow;
+      entriesByManager.set(normalizedName, existing);
+      activeManagerKey = normalizedName;
+      return;
+    }
+
+    if (activeManagerKey) {
+      const existing = entriesByManager.get(activeManagerKey) || { managerRow: emptyRow(), teams: [] };
+      existing.teams.push(limitedRow);
+      entriesByManager.set(activeManagerKey, existing);
+    }
   });
 
   const entries = managers.map(name => {
     const trimmedName = (name || '').toString().trim();
-    const row = rowsByManager.get(trimmedName.toLowerCase()) || sanitizedHeaders.map(() => '');
+    const normalizedName = normalize(trimmedName);
+    const stored = entriesByManager.get(normalizedName) || { managerRow: emptyRow(), teams: [] };
+    const row = Array.isArray(stored.managerRow) ? stored.managerRow : emptyRow();
     let score = '';
     if (Array.isArray(row) && scoreIdx !== -1) {
       const value = safeIndex(scoreIdx, row);
@@ -129,7 +169,8 @@ function extractManagerScores_(standings, managers) {
     return {
       name: trimmedName,
       score,
-      row
+      row,
+      teams: Array.isArray(stored.teams) ? stored.teams : []
     };
   });
 
