@@ -120,8 +120,9 @@
 
       .manager-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
+        gap: 24px;
         padding: 18px 20px;
         border-radius: 18px;
         border: 1px solid var(--card-border);
@@ -141,7 +142,8 @@
       .manager-main {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 12px;
+        flex: 1;
       }
 
       .manager-name {
@@ -159,6 +161,7 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        margin-top: 6px;
       }
 
       .manager-score-label {
@@ -178,6 +181,74 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+      }
+
+      .matchup-groups {
+        display: grid;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .matchup-card {
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: rgba(148, 163, 184, 0.15);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .matchup-card__header {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .matchup-card__label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
+      .matchup-card__name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .matchup-card__metrics {
+        display: grid;
+        gap: 8px;
+      }
+
+      .matchup-card__metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        padding-top: 6px;
+      }
+
+      .matchup-card__metric:first-child {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .matchup-card__metric-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        font-size: 0.7rem;
+      }
+
+      .matchup-card__metric-value {
+        font-weight: 600;
+        color: var(--text-primary);
       }
 
       .score-pill {
@@ -293,6 +364,9 @@
         .manager-item {
           padding: 16px;
           border-radius: 16px;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 16px;
         }
 
         .manager-name {
@@ -308,6 +382,10 @@
 
         .manager-breakdown {
           gap: 6px;
+        }
+
+        .matchup-card {
+          padding: 12px 14px;
         }
 
         .score-table th,
@@ -405,27 +483,94 @@
               <li class="manager-item">
                 <div class="manager-main">
                   <span class="manager-name"><?!= entry.name ?></span>
-                  <? if (secondaryColumns.length > 0) { ?>
+                  <?
+                    var breakdownItems = [];
+                    var matchupGroups = [];
+                    var currentMatchup = null;
+                    var createMatchup = function(label, name) {
+                      var trimmed = (name && name.toString) ? name.toString().trim() : '';
+                      if (!trimmed) {
+                        currentMatchup = null;
+                        return;
+                      }
+                      currentMatchup = {
+                        label: label,
+                        name: name,
+                        metrics: []
+                      };
+                      matchupGroups.push(currentMatchup);
+                    };
+                    var pushMetric = function(column, value) {
+                      if (!currentMatchup) {
+                        breakdownItems.push({
+                          label: column.label,
+                          value: value
+                        });
+                        return;
+                      }
+                      currentMatchup.metrics.push({
+                        label: column.label,
+                        value: value
+                      });
+                    };
+                    secondaryColumns.forEach(function(column) {
+                      var columnValue = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
+                      if (columnValue === null || typeof columnValue === 'undefined') {
+                        columnValue = '';
+                      }
+                      var hasValue = false;
+                      if (typeof columnValue === 'string') {
+                        hasValue = columnValue.trim() !== '';
+                      } else {
+                        hasValue = columnValue !== '';
+                      }
+                      if (!hasValue) {
+                        return;
+                      }
+                      var normalizedLabel = (column.label || '').toString().trim().toLowerCase();
+                      var isManagerLabel = normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('team') !== -1 || normalizedLabel.indexOf('opponent') !== -1 || normalizedLabel.indexOf('matchup') !== -1 || normalizedLabel.indexOf('name') !== -1;
+                      var isScoreLike = normalizedLabel.indexOf('score') !== -1 || normalizedLabel.indexOf('points') !== -1 || normalizedLabel.indexOf('total') !== -1 || normalizedLabel.indexOf('result') !== -1 || normalizedLabel.indexOf('record') !== -1 || normalizedLabel.indexOf('diff') !== -1 || normalizedLabel.indexOf('spread') !== -1;
+                      if (isManagerLabel && !isScoreLike) {
+                        createMatchup(column.label, columnValue);
+                      } else if (currentMatchup) {
+                        pushMetric(column, columnValue);
+                      } else {
+                        breakdownItems.push({
+                          label: column.label,
+                          value: columnValue
+                        });
+                      }
+                    });
+                  ?>
+                  <? if (breakdownItems.length > 0) { ?>
                     <div class="manager-breakdown">
-                      <? secondaryColumns.forEach(function(column) {
-                           var columnValue = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
-                           if (columnValue === null || typeof columnValue === 'undefined') {
-                             columnValue = '';
-                           }
-                           var hasValue = false;
-                           if (typeof columnValue === 'string') {
-                             hasValue = columnValue.trim() !== '';
-                           } else {
-                             hasValue = columnValue !== '';
-                           }
-                           if (!hasValue) {
-                             return;
-                           }
-                      ?>
+                      <? breakdownItems.forEach(function(item) { ?>
                         <span class="score-pill">
-                          <span class="score-pill__label"><?!= column.label ?></span>
-                          <span class="score-pill__value"><?!= columnValue ?></span>
+                          <span class="score-pill__label"><?!= item.label ?></span>
+                          <span class="score-pill__value"><?!= item.value ?></span>
                         </span>
+                      <? }); ?>
+                    </div>
+                  <? } ?>
+                  <? if (matchupGroups.length > 0) { ?>
+                    <div class="matchup-groups">
+                      <? matchupGroups.forEach(function(group) { ?>
+                        <div class="matchup-card">
+                          <div class="matchup-card__header">
+                            <span class="matchup-card__label"><?!= group.label ?></span>
+                            <span class="matchup-card__name"><?!= group.name ?></span>
+                          </div>
+                          <? if (group.metrics && group.metrics.length > 0) { ?>
+                            <div class="matchup-card__metrics">
+                              <? group.metrics.forEach(function(metric) { ?>
+                                <div class="matchup-card__metric">
+                                  <span class="matchup-card__metric-label"><?!= metric.label ?></span>
+                                  <span class="matchup-card__metric-value"><?!= metric.value ?></span>
+                                </div>
+                              <? }); ?>
+                            </div>
+                          <? } ?>
+                        </div>
                       <? }); ?>
                     </div>
                   <? } ?>
