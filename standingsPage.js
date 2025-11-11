@@ -174,11 +174,44 @@ function extractManagerScores_(standings, managers) {
     };
   });
 
+    const parseScoreForSort = value => {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.replace(/,/g, '').trim();
+      if (normalized === '') {
+        return null;
+      }
+      const parsed = parseFloat(normalized);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+    return null;
+  };
+
+  const sortedEntries = (scoreIdx !== -1)
+    ? entries
+        .map((entry, index) => {
+          const parsedScore = parseScoreForSort(entry.score);
+          const numericScore = parsedScore === null ? Number.NEGATIVE_INFINITY : parsedScore;
+          return { entry, index, numericScore };
+        })
+        .sort((a, b) => {
+          if (b.numericScore !== a.numericScore) {
+            return b.numericScore - a.numericScore;
+          }
+          return a.index - b.index;
+        })
+        .map(wrapper => wrapper.entry)
+    : entries;
+
   return {
     headers: sanitizedHeaders,
     managerColumnIndex: managerIdx,
     scoreColumnIndex: scoreIdx,
-    entries
+    entries: sortedEntries
   };
 }
 
