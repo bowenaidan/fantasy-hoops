@@ -150,6 +150,26 @@
         font-size: 1.05rem;
         font-weight: 600;
         letter-spacing: 0.01em;
+        background: none;
+        border: none;
+        color: inherit;
+        padding: 0;
+        text-align: left;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .manager-name:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
+      }
+
+      .manager-name::after {
+        content: '\25BC';
+        font-size: 0.75em;
+        transition: transform 0.2s ease;
       }
 
       .manager-score {
@@ -175,6 +195,19 @@
         text-transform: uppercase;
         letter-spacing: 0.08em;
         font-weight: 700;
+      }
+
+      .manager-item.is-expanded .manager-name::after {
+        transform: rotate(-180deg);
+      }
+
+      .manager-details {
+        display: none;
+        margin-top: 8px;
+      }
+
+      .manager-item.is-expanded .manager-details {
+        display: block;
       }
 
       .manager-breakdown {
@@ -380,6 +413,10 @@
           gap: 6px;
         }
 
+        .manager-details {
+          margin-top: 6px;
+        }
+
         .manager-breakdown {
           gap: 6px;
         }
@@ -482,7 +519,14 @@
             ?>
               <li class="manager-item">
                 <div class="manager-main">
-                  <span class="manager-name"><?!= entry.name ?></span>
+                  <?
+                    var detailIdBase = (entry.name || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                    if (!detailIdBase) {
+                      detailIdBase = 'manager';
+                    }
+                    var detailId = detailIdBase + '-' + Math.random().toString(36).slice(2, 8);
+                  ?>
+                  <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>"><?!= entry.name ?></button>
                   <?
                     var breakdownItems = [];
                     var matchupGroups = [];
@@ -542,38 +586,40 @@
                       }
                     });
                   ?>
-                  <? if (breakdownItems.length > 0) { ?>
-                    <div class="manager-breakdown">
-                      <? breakdownItems.forEach(function(item) { ?>
-                        <span class="score-pill">
-                          <span class="score-pill__label"><?!= item.label ?></span>
-                          <span class="score-pill__value"><?!= item.value ?></span>
-                        </span>
-                      <? }); ?>
-                    </div>
-                  <? } ?>
-                  <? if (matchupGroups.length > 0) { ?>
-                    <div class="matchup-groups">
-                      <? matchupGroups.forEach(function(group) { ?>
-                        <div class="matchup-card">
-                          <div class="matchup-card__header">
-                            <span class="matchup-card__label"><?!= group.label ?></span>
-                            <span class="matchup-card__name"><?!= group.name ?></span>
-                          </div>
-                          <? if (group.metrics && group.metrics.length > 0) { ?>
-                            <div class="matchup-card__metrics">
-                              <? group.metrics.forEach(function(metric) { ?>
-                                <div class="matchup-card__metric">
-                                  <span class="matchup-card__metric-label"><?!= metric.label ?></span>
-                                  <span class="matchup-card__metric-value"><?!= metric.value ?></span>
-                                </div>
-                              <? }); ?>
+                  <div id="<?!= detailId ?>" class="manager-details" hidden>
+                    <? if (breakdownItems.length > 0) { ?>
+                      <div class="manager-breakdown">
+                        <? breakdownItems.forEach(function(item) { ?>
+                          <span class="score-pill">
+                            <span class="score-pill__label"><?!= item.label ?></span>
+                            <span class="score-pill__value"><?!= item.value ?></span>
+                          </span>
+                        <? }); ?>
+                      </div>
+                    <? } ?>
+                    <? if (matchupGroups.length > 0) { ?>
+                      <div class="matchup-groups">
+                        <? matchupGroups.forEach(function(group) { ?>
+                          <div class="matchup-card">
+                            <div class="matchup-card__header">
+                              <span class="matchup-card__label"><?!= group.label ?></span>
+                              <span class="matchup-card__name"><?!= group.name ?></span>
                             </div>
-                          <? } ?>
-                        </div>
-                      <? }); ?>
-                    </div>
-                  <? } ?>
+                            <? if (group.metrics && group.metrics.length > 0) { ?>
+                              <div class="matchup-card__metrics">
+                                <? group.metrics.forEach(function(metric) { ?>
+                                  <div class="matchup-card__metric">
+                                    <span class="matchup-card__metric-label"><?!= metric.label ?></span>
+                                    <span class="matchup-card__metric-value"><?!= metric.value ?></span>
+                                  </div>
+                                <? }); ?>
+                              </div>
+                            <? } ?>
+                          </div>
+                        <? }); ?>
+                      </div>
+                    <? } ?>
+                  </div>
                 </div>
                 <span class="manager-score">
                   <? if (primaryColumn) { ?>
@@ -653,5 +699,32 @@
         Generated directly from the Standings sheet.
       </footer>
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var items = document.querySelectorAll('.manager-item');
+        items.forEach(function(item) {
+          var toggle = item.querySelector('.manager-name');
+          var details = item.querySelector('.manager-details');
+          if (!toggle || !details) {
+            return;
+          }
+          var setExpanded = function(expanded) {
+            if (expanded) {
+              item.classList.add('is-expanded');
+              toggle.setAttribute('aria-expanded', 'true');
+              details.removeAttribute('hidden');
+            } else {
+              item.classList.remove('is-expanded');
+              toggle.setAttribute('aria-expanded', 'false');
+              details.setAttribute('hidden', '');
+            }
+          };
+          toggle.addEventListener('click', function() {
+            setExpanded(!item.classList.contains('is-expanded'));
+          });
+          setExpanded(false);
+        });
+      });
+    </script>
   </body>
 </html>
