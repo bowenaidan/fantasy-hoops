@@ -249,6 +249,57 @@
         color: var(--text-secondary);
       }
 
+      .manager-teams {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .manager-team-heading {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        font-weight: 700;
+      }
+
+      .manager-team-table-scroll {
+        overflow-x: auto;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(15, 23, 42, 0.2);
+      }
+
+      .manager-team-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 320px;
+      }
+
+      .manager-team-table thead {
+        background: var(--table-header-bg);
+      }
+
+      .manager-team-table th,
+      .manager-team-table td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--table-border);
+        font-size: 0.9rem;
+      }
+
+      .manager-team-table th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+      }
+
+      .manager-team-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
       .empty-state {
         text-align: center;
         padding: 48px 24px;
@@ -461,7 +512,9 @@
                     }
                     var detailId = detailIdBase + '-' + Math.random().toString(36).slice(2, 8);
                   ?>
-                  <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>"><?!= entry.name ?></button>
+                  <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>">
+                    <?!= entry.name ?>
+                  </button>
                   <?
                     var detailValues = [];
                     detailColumns.forEach(function(column) {
@@ -497,6 +550,41 @@
                         value: columnValue
                       });
                     });
+
+                    var teamRows = Array.isArray(entry.teams) ? entry.teams : [];
+                    var columnHasTeamValue = function(columnIndex) {
+                      return teamRows.some(function(teamRow) {
+                        if (!Array.isArray(teamRow)) {
+                          return false;
+                        }
+                        var value = (columnIndex >= 0 && columnIndex < teamRow.length) ? teamRow[columnIndex] : '';
+                        if (value === null || typeof value === 'undefined') {
+                          return false;
+                        }
+                        if (typeof value === 'string') {
+                          return value.trim() !== '';
+                        }
+                        return value !== '' && value !== null;
+                      });
+                    };
+
+                    var teamColumns = [];
+                    if (teamRows.length > 0) {
+                      teamColumns = allColumns.filter(function(column) {
+                        if (column.index === managerColumnIndex) {
+                          return true;
+                        }
+                        if (column.index === scoreColumnIndex) {
+                          return columnHasTeamValue(column.index);
+                        }
+                        return columnHasTeamValue(column.index);
+                      });
+                      if (teamColumns.length === 0) {
+                        teamColumns = allColumns.filter(function(column) {
+                          return column.index === managerColumnIndex || column.index === scoreColumnIndex;
+                        });
+                      }
+                    }
                   ?>
                   <div id="<?!= detailId ?>" class="manager-details" hidden>
                     <? if (detailValues.length > 0) { ?>
@@ -508,7 +596,59 @@
                           </div>
                         <? }); ?>
                       </dl>
-                    <? } else { ?>
+                    <? } ?>
+                    <? if (teamRows.length > 0 && teamColumns.length > 0) { ?>
+                      <div class="manager-teams">
+                        <div class="manager-team-heading">Team Breakdown</div>
+                        <div class="manager-team-table-scroll">
+                          <table class="manager-team-table">
+                            <thead>
+                              <tr>
+                                <? teamColumns.forEach(function(column) {
+                                     var headingLabel = column.label;
+                                     var normalizedLabel = (headingLabel || '').toString().trim().toLowerCase();
+                                     if (column.index === managerColumnIndex && (normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('name') !== -1)) {
+                                       headingLabel = 'Team';
+                                     }
+                                ?>
+                                  <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= headingLabel ?></th>
+                                <? }); ?>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <? teamRows.forEach(function(teamRow) { ?>
+                                <tr>
+                                  <? teamColumns.forEach(function(column) {
+                                       var value = (column.index >= 0 && column.index < teamRow.length) ? teamRow[column.index] : '';
+                                       if (value === null || typeof value === 'undefined') {
+                                         value = '';
+                                       }
+                                       var hasValue = false;
+                                       if (typeof value === 'string') {
+                                         hasValue = value.trim() !== '';
+                                       } else {
+                                         hasValue = value !== '' && value !== null && typeof value !== 'undefined';
+                                       }
+                                       if (!hasValue && column.index === scoreColumnIndex) {
+                                         hasValue = value === 0;
+                                       }
+                                  ?>
+                                    <td class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>">
+                                      <? if (hasValue) { ?>
+                                        <?!= value ?>
+                                      <? } else { ?>
+                                        &mdash;
+                                      <? } ?>
+                                    </td>
+                                  <? }); ?>
+                                </tr>
+                              <? }); ?>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    <? } ?>
+                    <? if (detailValues.length === 0 && (!teamRows || teamRows.length === 0)) { ?>
                       <div class="manager-detail-empty">No additional details available.</div>
                     <? } ?>
                   </div>
