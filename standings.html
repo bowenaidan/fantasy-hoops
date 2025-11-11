@@ -243,6 +243,69 @@
         font-weight: 600;
       }
 
+      .manager-matchups {
+        margin-top: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        background: rgba(148, 163, 184, 0.12);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .manager-matchups__header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding: 12px 14px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        background: rgba(56, 189, 248, 0.15);
+        font-weight: 700;
+      }
+
+      .manager-matchups__item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: baseline;
+        padding: 12px 14px;
+        border-top: 1px solid rgba(148, 163, 184, 0.15);
+      }
+
+      .manager-matchups__item:first-of-type {
+        border-top: none;
+      }
+
+      .manager-matchups__team,
+      .manager-matchups__score {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .manager-matchups__team-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .manager-matchups__score-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-align: right;
+      }
+
+      .manager-matchups__meta {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-secondary);
+      }
+
       .manager-detail-empty {
         margin-top: 8px;
         font-size: 0.9rem;
@@ -363,6 +426,16 @@
           gap: 6px;
         }
 
+        .manager-matchups {
+          margin-top: 6px;
+        }
+
+        .manager-matchups__header,
+        .manager-matchups__item {
+          padding: 10px 12px;
+          gap: 10px;
+        }
+
         .score-table th,
         .score-table td {
           padding: 12px 14px;
@@ -420,6 +493,109 @@
           if (!primaryColumn && detailColumns.length > 0) {
             primaryColumn = detailColumns[0];
           }
+          var hasNonEmptyValue = function(value) {
+            if (value === null || typeof value === 'undefined') {
+              return false;
+            }
+            if (typeof value === 'string') {
+              return value.trim() !== '';
+            }
+            return value !== '';
+          };
+          var labelContainsKeyword = function(label, keywords) {
+            if (!label && label !== 0) {
+              return false;
+            }
+            var normalized = label.toString().trim().toLowerCase();
+            if (normalized === '') {
+              return false;
+            }
+            for (var i = 0; i < keywords.length; i++) {
+              if (normalized.indexOf(keywords[i]) !== -1) {
+                return true;
+              }
+            }
+            return false;
+          };
+          var isLikelyNumericString = function(str) {
+            if (typeof str === 'number') {
+              return true;
+            }
+            if (str === null || typeof str === 'undefined') {
+              return false;
+            }
+            var normalized = str.toString().trim();
+            if (normalized === '') {
+              return false;
+            }
+            return /^-?\d+(\.\d+)?$/.test(normalized);
+          };
+          var isLikelyScoreValue = function(value) {
+            if (!hasNonEmptyValue(value)) {
+              return false;
+            }
+            if (typeof value === 'number') {
+              return true;
+            }
+            var normalized = value.toString().trim();
+            if (normalized === '') {
+              return false;
+            }
+            if (isLikelyNumericString(normalized)) {
+              return true;
+            }
+            if (/^[WL]\b/.test(normalized)) {
+              return true;
+            }
+            if (/\d+\s*-\s*\d+/.test(normalized)) {
+              return true;
+            }
+            if (/(pts?|points?|final|result)/i.test(normalized)) {
+              return true;
+            }
+            return false;
+          };
+          var isLikelyTeamValue = function(value) {
+            if (!hasNonEmptyValue(value)) {
+              return false;
+            }
+            if (typeof value === 'number') {
+              return false;
+            }
+            var normalized = value.toString().trim();
+            if (normalized === '') {
+              return false;
+            }
+            if (normalized.length <= 2) {
+              return false;
+            }
+            if (!/[a-z]/i.test(normalized)) {
+              return false;
+            }
+            if (isLikelyScoreValue(normalized)) {
+              return false;
+            }
+            return true;
+          };
+          var shouldColumnsPairAsMatchup = function(currentColumn, currentValue, nextColumn, nextValue) {
+            if (!nextColumn) {
+              return false;
+            }
+            var currentLabel = currentColumn && currentColumn.label ? currentColumn.label.toString() : '';
+            var nextLabel = nextColumn && nextColumn.label ? nextColumn.label.toString() : '';
+            var nextIsScoreHeader = labelContainsKeyword(nextLabel, ['score', 'points', 'result', 'final']);
+            var currentIsTeamHeader = labelContainsKeyword(currentLabel, ['team', 'opponent', 'matchup', 'vs', 'versus']);
+            if (nextIsScoreHeader && (hasNonEmptyValue(currentValue) || currentIsTeamHeader)) {
+              return true;
+            }
+            if (currentIsTeamHeader && isLikelyScoreValue(nextValue)) {
+              return true;
+            }
+            if (isLikelyTeamValue(currentValue) && isLikelyScoreValue(nextValue)) {
+              return true;
+            }
+            return false;
+          };
         ?>
         <? if (entries.length === 0) { ?>
           <div class="empty-state">
@@ -463,42 +639,137 @@
                   ?>
                   <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>"><?!= entry.name ?></button>
                   <?
-                    var detailValues = [];
-                    detailColumns.forEach(function(column) {
-                      if (primaryColumn && column.index === primaryColumn.index) {
-                        return;
-                      }
-                      var columnValue = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
-                      if (columnValue === null || typeof columnValue === 'undefined') {
-                        columnValue = '';
-                      }
-                      var hasValue = false;
-                      if (typeof columnValue === 'string') {
-                        hasValue = columnValue.trim() !== '';
-                      } else {
-                        hasValue = columnValue !== '' && columnValue !== null;
-                      }
-                      if (!hasValue && column.index === scoreColumnIndex) {
-                        var fallbackScoreValue = (typeof entry.score !== 'undefined') ? entry.score : '';
-                        if (typeof fallbackScoreValue === 'string') {
-                          hasValue = fallbackScoreValue.trim() !== '';
-                        } else {
-                          hasValue = fallbackScoreValue !== '' && fallbackScoreValue !== null && typeof fallbackScoreValue !== 'undefined';
+                    var getValueForIndex = function(idx) {
+                      if (idx >= 0 && idx < row.length) {
+                        var cell = row[idx];
+                        if (cell === null || typeof cell === 'undefined') {
+                          return '';
                         }
-                        if (hasValue) {
-                          columnValue = fallbackScoreValue;
-                        }
+                        return cell;
                       }
-                      if (!hasValue) {
-                        return;
-                      }
-                      detailValues.push({
-                        label: column.label,
-                        value: columnValue
-                      });
+                      return '';
+                    };
+                    var sortedColumns = detailColumns.slice().sort(function(a, b) {
+                      return a.index - b.index;
                     });
+                    var consumedColumnIndexes = Object.create(null);
+                    var detailValues = [];
+                    var matchupValues = [];
+                    for (var columnIdx = 0; columnIdx < sortedColumns.length; columnIdx++) {
+                      var column = sortedColumns[columnIdx];
+                      if (primaryColumn && column.index === primaryColumn.index) {
+                        continue;
+                      }
+                      if (consumedColumnIndexes[column.index]) {
+                        continue;
+                      }
+                      var columnValue = getValueForIndex(column.index);
+                      var hasColumnValue = hasNonEmptyValue(columnValue);
+                      var nextColumn = sortedColumns[columnIdx + 1];
+                      if (nextColumn && !consumedColumnIndexes[nextColumn.index]) {
+                        var nextValue = getValueForIndex(nextColumn.index);
+                        var hasNextValue = hasNonEmptyValue(nextValue);
+                        if (shouldColumnsPairAsMatchup(column, columnValue, nextColumn, nextValue)) {
+                          var scoreValue = nextValue;
+                          var hasScoreValue = hasNextValue;
+                          if (!hasScoreValue && nextColumn.index === scoreColumnIndex) {
+                            var fallbackScoreValue = (typeof entry.score !== 'undefined') ? entry.score : '';
+                            if (hasNonEmptyValue(fallbackScoreValue)) {
+                              scoreValue = fallbackScoreValue;
+                              hasScoreValue = true;
+                            }
+                          }
+                          var teamLabelText = (column.label && column.label.toString().trim() !== '') ? column.label.toString() : '';
+                          var scoreLabelText = (nextColumn.label && nextColumn.label.toString().trim() !== '') ? nextColumn.label.toString() : '';
+                          var teamDisplay = hasColumnValue ? columnValue : (teamLabelText || 'Matchup');
+                          var normalizedTeamDisplay = (teamDisplay === null || typeof teamDisplay === 'undefined') ? '' : teamDisplay.toString().trim().toLowerCase();
+                          var normalizedTeamLabel = teamLabelText ? teamLabelText.toString().trim().toLowerCase() : '';
+                          var teamMeta = '';
+                          if (teamLabelText && normalizedTeamLabel !== '' && normalizedTeamLabel !== normalizedTeamDisplay) {
+                            teamMeta = teamLabelText;
+                          }
+                          var scoreMeta = '';
+                          var normalizedScoreLabel = scoreLabelText ? scoreLabelText.toString().trim() : '';
+                          if (normalizedScoreLabel !== '') {
+                            var normalizedScoreLabelLower = normalizedScoreLabel.toLowerCase();
+                            var normalizedScoreValue = hasScoreValue ? scoreValue.toString().trim().toLowerCase() : '';
+                            if (normalizedScoreLabelLower !== '' && normalizedScoreLabelLower !== normalizedScoreValue) {
+                              scoreMeta = scoreLabelText;
+                            }
+                          }
+                          if (hasNonEmptyValue(teamDisplay) || hasScoreValue) {
+                            matchupValues.push({
+                              teamDisplay: teamDisplay,
+                              teamMeta: teamMeta,
+                              scoreDisplay: hasScoreValue ? scoreValue : '',
+                              scoreMeta: scoreMeta,
+                              hasScore: hasScoreValue
+                            });
+                            consumedColumnIndexes[column.index] = true;
+                            consumedColumnIndexes[nextColumn.index] = true;
+                            columnIdx++;
+                            continue;
+                          }
+                        }
+                      }
+                      if (hasColumnValue) {
+                        detailValues.push({
+                          label: column.label,
+                          value: columnValue
+                        });
+                      }
+                      consumedColumnIndexes[column.index] = true;
+                    }
+                    if (detailValues.length === 0 && matchupValues.length === 0 && primaryColumn) {
+                      var primaryDetailValue = getValueForIndex(primaryColumn.index);
+                      if (!hasNonEmptyValue(primaryDetailValue)) {
+                        var primaryFallbackValue = (typeof entry.score !== 'undefined') ? entry.score : '';
+                        if (hasNonEmptyValue(primaryFallbackValue)) {
+                          primaryDetailValue = primaryFallbackValue;
+                        }
+                      }
+                      if (hasNonEmptyValue(primaryDetailValue)) {
+                        var primaryDetailLabel = (primaryColumn.label && primaryColumn.label.toString().trim() !== '')
+                          ? primaryColumn.label
+                          : 'Score';
+                        detailValues.push({
+                          label: primaryDetailLabel,
+                          value: primaryDetailValue
+                        });
+                      }
+                    }
                   ?>
                   <div id="<?!= detailId ?>" class="manager-details" hidden>
+                    <? if (matchupValues.length > 0) { ?>
+                      <div class="manager-matchups" role="group" aria-label="Team scores for <?!= entry.name ?>">
+                        <div class="manager-matchups__header">
+                          <span>Team</span>
+                          <span>Score</span>
+                        </div>
+                        <? matchupValues.forEach(function(matchup) { ?>
+                          <div class="manager-matchups__item">
+                            <div class="manager-matchups__team">
+                              <span class="manager-matchups__team-name"><?!= matchup.teamDisplay ?></span>
+                              <? if (matchup.teamMeta) { ?>
+                                <span class="manager-matchups__meta"><?!= matchup.teamMeta ?></span>
+                              <? } ?>
+                            </div>
+                            <div class="manager-matchups__score">
+                              <span class="manager-matchups__score-value">
+                                <? if (matchup.hasScore) { ?>
+                                  <?!= matchup.scoreDisplay ?>
+                                <? } else { ?>
+                                  &mdash;
+                                <? } ?>
+                              </span>
+                              <? if (matchup.scoreMeta) { ?>
+                                <span class="manager-matchups__meta"><?!= matchup.scoreMeta ?></span>
+                              <? } ?>
+                            </div>
+                          </div>
+                        <? }); ?>
+                      </div>
+                    <? } ?>
                     <? if (detailValues.length > 0) { ?>
                       <dl class="manager-detail-list">
                         <? detailValues.forEach(function(detail) { ?>
@@ -508,7 +779,8 @@
                           </div>
                         <? }); ?>
                       </dl>
-                    <? } else { ?>
+                    <? } ?>
+                    <? if (matchupValues.length === 0 && detailValues.length === 0) { ?>
                       <div class="manager-detail-empty">No additional details available.</div>
                     <? } ?>
                   </div>
