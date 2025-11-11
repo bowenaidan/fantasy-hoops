@@ -210,101 +210,43 @@
         display: block;
       }
 
-      .manager-breakdown {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .matchup-groups {
+      .manager-detail-list {
         display: grid;
-        gap: 12px;
-        margin-top: 4px;
+        gap: 8px;
+        margin-top: 8px;
       }
 
-      .matchup-card {
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        padding: 14px 16px;
+      .manager-detail-list__item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px;
+        align-items: baseline;
+        padding: 10px 12px;
+        border-radius: 12px;
         background: rgba(148, 163, 184, 0.15);
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
       }
 
-      .matchup-card__header {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .matchup-card__label {
-        font-size: 0.7rem;
+      .manager-detail-list__term {
+        margin: 0;
+        font-size: 0.78rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: var(--text-secondary);
         font-weight: 600;
       }
 
-      .matchup-card__name {
+      .manager-detail-list__description {
+        margin: 0;
         font-size: 0.95rem;
-        font-weight: 600;
         color: var(--text-primary);
+        font-weight: 600;
       }
 
-      .matchup-card__metrics {
-        display: grid;
-        gap: 8px;
-      }
-
-      .matchup-card__metric {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.85rem;
+      .manager-detail-empty {
+        margin-top: 8px;
+        font-size: 0.9rem;
         color: var(--text-secondary);
-        border-top: 1px solid rgba(148, 163, 184, 0.2);
-        padding-top: 6px;
-      }
-
-      .matchup-card__metric:first-child {
-        border-top: none;
-        padding-top: 0;
-      }
-
-      .matchup-card__metric-label {
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 600;
-        font-size: 0.7rem;
-      }
-
-      .matchup-card__metric-value {
-        font-weight: 600;
-        color: var(--text-primary);
-      }
-
-      .score-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(148, 163, 184, 0.15);
-        color: var(--text-secondary);
-        font-size: 0.8rem;
-        font-weight: 500;
-      }
-
-      .score-pill__label {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .score-pill__value {
-        font-weight: 600;
-        color: var(--text-primary);
       }
 
       .empty-state {
@@ -417,12 +359,8 @@
           margin-top: 6px;
         }
 
-        .manager-breakdown {
+        .manager-detail-list {
           gap: 6px;
-        }
-
-        .matchup-card {
-          padding: 12px 14px;
         }
 
         .score-table th,
@@ -482,9 +420,6 @@
           if (!primaryColumn && detailColumns.length > 0) {
             primaryColumn = detailColumns[0];
           }
-          const secondaryColumns = primaryColumn
-            ? detailColumns.filter(function(column) { return column.index !== primaryColumn.index; })
-            : detailColumns;
         ?>
         <? if (entries.length === 0) { ?>
           <div class="empty-state">
@@ -528,36 +463,11 @@
                   ?>
                   <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>"><?!= entry.name ?></button>
                   <?
-                    var breakdownItems = [];
-                    var matchupGroups = [];
-                    var currentMatchup = null;
-                    var createMatchup = function(label, name) {
-                      var trimmed = (name && name.toString) ? name.toString().trim() : '';
-                      if (!trimmed) {
-                        currentMatchup = null;
+                    var detailValues = [];
+                    detailColumns.forEach(function(column) {
+                      if (primaryColumn && column.index === primaryColumn.index) {
                         return;
                       }
-                      currentMatchup = {
-                        label: label,
-                        name: name,
-                        metrics: []
-                      };
-                      matchupGroups.push(currentMatchup);
-                    };
-                    var pushMetric = function(column, value) {
-                      if (!currentMatchup) {
-                        breakdownItems.push({
-                          label: column.label,
-                          value: value
-                        });
-                        return;
-                      }
-                      currentMatchup.metrics.push({
-                        label: column.label,
-                        value: value
-                      });
-                    };
-                    secondaryColumns.forEach(function(column) {
                       var columnValue = (column.index >= 0 && column.index < row.length) ? row[column.index] : '';
                       if (columnValue === null || typeof columnValue === 'undefined') {
                         columnValue = '';
@@ -566,58 +476,40 @@
                       if (typeof columnValue === 'string') {
                         hasValue = columnValue.trim() !== '';
                       } else {
-                        hasValue = columnValue !== '';
+                        hasValue = columnValue !== '' && columnValue !== null;
+                      }
+                      if (!hasValue && column.index === scoreColumnIndex) {
+                        var fallbackScoreValue = (typeof entry.score !== 'undefined') ? entry.score : '';
+                        if (typeof fallbackScoreValue === 'string') {
+                          hasValue = fallbackScoreValue.trim() !== '';
+                        } else {
+                          hasValue = fallbackScoreValue !== '' && fallbackScoreValue !== null && typeof fallbackScoreValue !== 'undefined';
+                        }
+                        if (hasValue) {
+                          columnValue = fallbackScoreValue;
+                        }
                       }
                       if (!hasValue) {
                         return;
                       }
-                      var normalizedLabel = (column.label || '').toString().trim().toLowerCase();
-                      var isManagerLabel = normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('team') !== -1 || normalizedLabel.indexOf('opponent') !== -1 || normalizedLabel.indexOf('matchup') !== -1 || normalizedLabel.indexOf('name') !== -1;
-                      var isScoreLike = normalizedLabel.indexOf('score') !== -1 || normalizedLabel.indexOf('points') !== -1 || normalizedLabel.indexOf('total') !== -1 || normalizedLabel.indexOf('result') !== -1 || normalizedLabel.indexOf('record') !== -1 || normalizedLabel.indexOf('diff') !== -1 || normalizedLabel.indexOf('spread') !== -1;
-                      if (isManagerLabel && !isScoreLike) {
-                        createMatchup(column.label, columnValue);
-                      } else if (currentMatchup) {
-                        pushMetric(column, columnValue);
-                      } else {
-                        breakdownItems.push({
-                          label: column.label,
-                          value: columnValue
-                        });
-                      }
+                      detailValues.push({
+                        label: column.label,
+                        value: columnValue
+                      });
                     });
                   ?>
                   <div id="<?!= detailId ?>" class="manager-details" hidden>
-                    <? if (breakdownItems.length > 0) { ?>
-                      <div class="manager-breakdown">
-                        <? breakdownItems.forEach(function(item) { ?>
-                          <span class="score-pill">
-                            <span class="score-pill__label"><?!= item.label ?></span>
-                            <span class="score-pill__value"><?!= item.value ?></span>
-                          </span>
-                        <? }); ?>
-                      </div>
-                    <? } ?>
-                    <? if (matchupGroups.length > 0) { ?>
-                      <div class="matchup-groups">
-                        <? matchupGroups.forEach(function(group) { ?>
-                          <div class="matchup-card">
-                            <div class="matchup-card__header">
-                              <span class="matchup-card__label"><?!= group.label ?></span>
-                              <span class="matchup-card__name"><?!= group.name ?></span>
-                            </div>
-                            <? if (group.metrics && group.metrics.length > 0) { ?>
-                              <div class="matchup-card__metrics">
-                                <? group.metrics.forEach(function(metric) { ?>
-                                  <div class="matchup-card__metric">
-                                    <span class="matchup-card__metric-label"><?!= metric.label ?></span>
-                                    <span class="matchup-card__metric-value"><?!= metric.value ?></span>
-                                  </div>
-                                <? }); ?>
-                              </div>
-                            <? } ?>
+                    <? if (detailValues.length > 0) { ?>
+                      <dl class="manager-detail-list">
+                        <? detailValues.forEach(function(detail) { ?>
+                          <div class="manager-detail-list__item">
+                            <dt class="manager-detail-list__term"><?!= detail.label ?></dt>
+                            <dd class="manager-detail-list__description"><?!= detail.value ?></dd>
                           </div>
                         <? }); ?>
-                      </div>
+                      </dl>
+                    <? } else { ?>
+                      <div class="manager-detail-empty">No additional details available.</div>
                     <? } ?>
                   </div>
                 </div>
