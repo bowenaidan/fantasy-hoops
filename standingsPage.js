@@ -221,11 +221,12 @@ function doGet() {
   const template = HtmlService.createTemplateFromFile('standings');
   template.standings = standings;
   template.managerScores = managerScores;
-  const timeZone = Session.getScriptTimeZone() || 'America/Chicago';
-  template.generatedAt = Utilities.formatDate(new Date(), timeZone, 'MMMM d, yyyy h:mm a z');
+  const properties = PropertiesService.getDocumentProperties();
+  template.generatedAt = properties.getProperty('updatedAt');
   return template
     .evaluate()
     .setTitle('Fantasy Hoops Standings')
+    .setFaviconUrl('https://drive.google.com/uc?id=1jrs17VqgPU22dXWgMJSNRMjvOOcJcVzA&export=download&format=png')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
