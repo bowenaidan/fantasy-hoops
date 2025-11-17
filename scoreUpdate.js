@@ -138,15 +138,25 @@ function dailySync(isoDate) {
   for (const team of roster) {
     let points = 0;
     for (const games of dayGames.games) {
-      if (games.game.currentPeriod == "FINAL"){
+      if (games.game.currentPeriod == "FINAL" && games.game.finalMessage == "FINAL" && games.game.gameState == "final"){
         const gameKey = getGameKey_(games.game);
         if (gameKey && processedGameSet.has(gameKey)) {
           continue;
         }
         const home = games.game.home.names.short;
         const away = games.game.away.names.short;
-        const winner = games.game.home.winner ? home : away;
-        const loser = games.game.home.winner ? away : home;
+        let winner;
+        let loser;
+        if (games.game.home.winner) {
+          winner = home;
+          loser = away;
+        }
+        else if (games.game.away.winner) {
+          winner = away;
+          loser = home;
+        }
+        // const winner = games.game.home.winner ? home : away;
+        // const loser = games.game.home.winner ? away : home;
         const loserRank = loser === away ? games.game.away.rank : games.game.home.rank;
         if (winner == team){
           const homeConference = games.game.home.conferences[0].conferenceSeo;
