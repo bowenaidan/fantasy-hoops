@@ -131,10 +131,8 @@ function dailySync(isoDate) {
   var pointMap = new Map();
   // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
-  const top25Raw = fetchJson_(`${NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`);
-  const top25 = parseApPoll_(top25Raw);
-  Logger.log(top25);
   if (!dayGames || !dayGames.games) return;
+  Logger.log(JSON.stringify(dayGames, null, 2));
   const processedGameSet = loadProcessedGameKeys_();
   const roster = ROSTER;
   for (const team of roster) {
@@ -149,6 +147,7 @@ function dailySync(isoDate) {
         const away = games.game.away.names.short;
         const winner = games.game.home.winner ? home : away;
         const loser = games.game.home.winner ? away : home;
+        const loserRank = loser === away ? games.game.away.rank : games.game.home.rank;
         if (winner == team){
           const homeConference = games.game.home.conferences[0].conferenceSeo;
           const awayConference = games.game.away.conferences[0].conferenceSeo;
@@ -185,12 +184,12 @@ function dailySync(isoDate) {
               gamePoints = gamePoints - 4;
             }
           }
-          if (top25.includes(loser.replace(/\s*\(.*?\).*/, '').trim())){
-            if (top25.indexOf(loser.replace(/\s*\(.*?\).*/, '').trim()) < 10) {
+          if (loserRank != "" && loserRank != null && loserRank != "null" && loserRank <= 25){
+            if (loserRank <= 10) {
               gamePoints = gamePoints + 5;
             }
             else {
-              gamePoints = gamePoints + 2.5;
+              gamePoints = gamePoints + 2.5
             }
           }
           points += gamePoints;
@@ -205,6 +204,7 @@ function dailySync(isoDate) {
     pointMap.set(team, points);
   }
   Logger.log(JSON.stringify(Array.from(pointMap), null, 2));
+  Logger.log(dayGames);
   updateStandings_(pointMap);
   saveProcessedGameKeys_(processedGameSet);
 }
