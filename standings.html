@@ -577,6 +577,34 @@
                       });
                     };
 
+                    var prioritizeTeamColumns = function(columns) {
+                      if (!Array.isArray(columns)) {
+                        return [];
+                      }
+                      var ordered = [];
+                      var addIfPresent = function(column) {
+                        if (column && ordered.indexOf(column) === -1) {
+                          ordered.push(column);
+                        }
+                      };
+                      var managerColumn = columns.find(function(column) {
+                        return column.index === managerColumnIndex;
+                      });
+                      var opponentColumn = columns.find(function(column) {
+                        return column.index === opponentColumnIndex;
+                      });
+                      var scoreColumn = columns.find(function(column) {
+                        return column.index === scoreColumnIndex;
+                      });
+                      addIfPresent(managerColumn);
+                      addIfPresent(opponentColumn);
+                      addIfPresent(scoreColumn);
+                      columns.forEach(function(column) {
+                        addIfPresent(column);
+                      });
+                      return ordered;
+                    };
+
                       var teamColumns = [];
                       if (teamRows.length > 0) {
                         teamColumns = allColumns.filter(function(column) {
@@ -596,6 +624,7 @@
                             return column.index === managerColumnIndex || column.index === scoreColumnIndex || column.index === opponentColumnIndex;
                           });
                         }
+                        teamColumns = prioritizeTeamColumns(teamColumns);
                       }
                   ?>
                   <div id="<?!= detailId ?>" class="manager-details" hidden>
