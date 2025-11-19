@@ -275,6 +275,7 @@
         width: 100%;
         border-collapse: collapse;
         min-width: 320px;
+        table-layout: fixed;
       }
 
       .manager-team-table thead {
@@ -287,6 +288,7 @@
         text-align: left;
         border-bottom: 1px solid var(--table-border);
         font-size: 0.9rem;
+        word-break: break-word;
       }
 
       .manager-team-table th {
@@ -294,6 +296,14 @@
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: var(--text-secondary);
+      }
+
+      .manager-team-table th.is-primary-score,
+      .manager-team-table td.is-primary-score {
+        width: 80px;
+        text-align: right;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
       }
 
       .manager-team-table tbody tr:last-child td {
@@ -412,6 +422,21 @@
 
         .manager-detail-list {
           gap: 6px;
+        }
+
+        .manager-team-table {
+          min-width: 0;
+        }
+
+        .manager-team-table th,
+        .manager-team-table td {
+          padding: 10px 10px;
+          font-size: 0.85rem;
+        }
+
+        .manager-team-table th.is-primary-score,
+        .manager-team-table td.is-primary-score {
+          width: 64px;
         }
 
         .score-table th,
