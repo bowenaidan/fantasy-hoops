@@ -619,6 +619,9 @@
                                      if (column.index === managerColumnIndex && (normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('name') !== -1)) {
                                        headingLabel = 'Team';
                                      }
+                                     if (column.index === opponentColumnIndex) {
+                                       headingLabel = '';
+                                     }
                                 ?>
                                   <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= headingLabel ?></th>
                                 <? }); ?>
