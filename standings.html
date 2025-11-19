@@ -446,9 +446,18 @@
           const managerColumnIndex = (typeof managerData.managerColumnIndex === 'number') ? managerData.managerColumnIndex : -1;
           const scoreColumnIndex = (typeof managerData.scoreColumnIndex === 'number') ? managerData.scoreColumnIndex : -1;
           const allColumns = headers.map(function(header, idx) {
-            var label = (header && header.toString().trim() !== '') ? header : ('Column ' + (idx + 1));
+            var label = (header && header.toString().trim() !== '') ? header : ' ';
             return { label: label, index: idx };
           });
+          const normalizedHeaders = headers.map(function(header) {
+            return (header || '').toString().trim().toLowerCase();
+          });
+          var opponentColumnIndex = normalizedHeaders.findIndex(function(header) {
+            return header === 'opponent' || header === 'opp' || header.indexOf('opponent') !== -1;
+          });
+          if (opponentColumnIndex === -1 && scoreColumnIndex >= 0 && (scoreColumnIndex + 1) < headers.length) {
+            opponentColumnIndex = scoreColumnIndex + 1;
+          }
           const detailColumns = allColumns.filter(function(column) {
             return column.index !== managerColumnIndex;
           }).filter(function(column) {
@@ -568,23 +577,55 @@
                       });
                     };
 
-                    var teamColumns = [];
-                    if (teamRows.length > 0) {
-                      teamColumns = allColumns.filter(function(column) {
-                        if (column.index === managerColumnIndex) {
-                          return true;
-                        }
-                        if (column.index === scoreColumnIndex) {
-                          return columnHasTeamValue(column.index);
-                        }
-                        return columnHasTeamValue(column.index);
-                      });
-                      if (teamColumns.length === 0) {
-                        teamColumns = allColumns.filter(function(column) {
-                          return column.index === managerColumnIndex || column.index === scoreColumnIndex;
-                        });
+                    var prioritizeTeamColumns = function(columns) {
+                      if (!Array.isArray(columns)) {
+                        return [];
                       }
-                    }
+                      var ordered = [];
+                      var addIfPresent = function(column) {
+                        if (column && ordered.indexOf(column) === -1) {
+                          ordered.push(column);
+                        }
+                      };
+                      var managerColumn = columns.find(function(column) {
+                        return column.index === managerColumnIndex;
+                      });
+                      var opponentColumn = columns.find(function(column) {
+                        return column.index === opponentColumnIndex;
+                      });
+                      var scoreColumn = columns.find(function(column) {
+                        return column.index === scoreColumnIndex;
+                      });
+                      addIfPresent(managerColumn);
+                      addIfPresent(opponentColumn);
+                      addIfPresent(scoreColumn);
+                      columns.forEach(function(column) {
+                        addIfPresent(column);
+                      });
+                      return ordered;
+                    };
+
+                      var teamColumns = [];
+                      if (teamRows.length > 0) {
+                        teamColumns = allColumns.filter(function(column) {
+                          if (column.index === managerColumnIndex) {
+                            return true;
+                          }
+                          if (column.index === scoreColumnIndex) {
+                            return true;
+                          }
+                          if (column.index === opponentColumnIndex) {
+                            return true;
+                          }
+                          return columnHasTeamValue(column.index);
+                        });
+                        if (teamColumns.length === 0) {
+                          teamColumns = allColumns.filter(function(column) {
+                            return column.index === managerColumnIndex || column.index === scoreColumnIndex || column.index === opponentColumnIndex;
+                          });
+                        }
+                        teamColumns = prioritizeTeamColumns(teamColumns);
+                      }
                   ?>
                   <div id="<?!= detailId ?>" class="manager-details" hidden>
                     <? if (detailValues.length > 0) { ?>
@@ -610,6 +651,9 @@
                                      if (column.index === managerColumnIndex && (normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('name') !== -1)) {
                                        headingLabel = 'Team';
                                      }
+                                     if (column.index === opponentColumnIndex) {
+                                       headingLabel = ' ';
+                                     }
                                 ?>
                                   <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= headingLabel ?></th>
                                 <? }); ?>
@@ -632,10 +676,13 @@
                                        if (!hasValue && column.index === scoreColumnIndex) {
                                          hasValue = value === 0;
                                        }
+                                       var isOpponentColumn = column.index === opponentColumnIndex;
                                   ?>
                                     <td class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>">
                                       <? if (hasValue) { ?>
                                         <?!= value ?>
+                                      <? } else if (isOpponentColumn) { ?>
+                                        
                                       <? } else { ?>
                                         &mdash;
                                       <? } ?>
