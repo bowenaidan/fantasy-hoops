@@ -275,6 +275,7 @@
         width: 100%;
         border-collapse: collapse;
         min-width: 320px;
+        table-layout: fixed;
       }
 
       .manager-team-table thead {
@@ -287,6 +288,7 @@
         text-align: left;
         border-bottom: 1px solid var(--table-border);
         font-size: 0.9rem;
+        word-break: break-word;
       }
 
       .manager-team-table th {
@@ -294,6 +296,22 @@
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: var(--text-secondary);
+      }
+
+      .manager-team-table th.is-primary-score,
+      .manager-team-table td.is-primary-score {
+        width: 80px;
+        text-align: right;
+        padding-right: 18px;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .manager-team-table th.is-opponent,
+      .manager-team-table td.is-opponent {
+        width: 110px;
+        padding-left: 10px;
+        padding-right: 10px;
       }
 
       .manager-team-table tbody tr:last-child td {
@@ -383,12 +401,12 @@
 
         header,
         .card {
-          padding: 24px;
+          padding: 12px;
           border-radius: 20px;
         }
 
         .manager-item {
-          padding: 16px;
+          padding: 8px;
           border-radius: 16px;
           flex-direction: column;
           align-items: stretch;
@@ -412,6 +430,29 @@
 
         .manager-detail-list {
           gap: 6px;
+        }
+
+        .manager-team-table {
+          min-width: 0;
+        }
+
+        .manager-team-table th,
+        .manager-team-table td {
+          padding: 10px 10px;
+          font-size: 0.85rem;
+        }
+
+        .manager-team-table th.is-primary-score,
+        .manager-team-table td.is-primary-score {
+          width: 64px;
+          padding-right: 16px;
+        }
+
+        .manager-team-table th.is-opponent,
+        .manager-team-table td.is-opponent {
+          width: 96px;
+          padding-left: 8px;
+          padding-right: 8px;
         }
 
         .score-table th,
@@ -654,8 +695,16 @@
                                      if (column.index === opponentColumnIndex) {
                                        headingLabel = ' ';
                                      }
+                                     var headingClasses = [];
+                                     if (column.index === scoreColumnIndex) {
+                                       headingClasses.push('is-primary-score');
+                                     }
+                                     if (column.index === opponentColumnIndex) {
+                                       headingClasses.push('is-opponent');
+                                     }
+                                     var headingClassName = headingClasses.join(' ');
                                 ?>
-                                  <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= headingLabel ?></th>
+                                  <th scope="col" class="<?!= headingClassName ?>"><?!= headingLabel ?></th>
                                 <? }); ?>
                               </tr>
                             </thead>
@@ -677,12 +726,20 @@
                                          hasValue = value === 0;
                                        }
                                        var isOpponentColumn = column.index === opponentColumnIndex;
+                                       var cellClasses = [];
+                                       if (column.index === scoreColumnIndex) {
+                                         cellClasses.push('is-primary-score');
+                                       }
+                                       if (isOpponentColumn) {
+                                         cellClasses.push('is-opponent');
+                                       }
+                                       var cellClassName = cellClasses.join(' ');
                                   ?>
-                                    <td class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>">
+                                    <td class="<?!= cellClassName ?>">
                                       <? if (hasValue) { ?>
                                         <?!= value ?>
                                       <? } else if (isOpponentColumn) { ?>
-                                        
+
                                       <? } else { ?>
                                         &mdash;
                                       <? } ?>
