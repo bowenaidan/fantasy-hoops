@@ -449,6 +449,12 @@
             var label = (header && header.toString().trim() !== '') ? header : ('Column ' + (idx + 1));
             return { label: label, index: idx };
           });
+          const normalizedHeaders = headers.map(function(header) {
+            return (header || '').toString().trim().toLowerCase();
+          });
+          const opponentColumnIndex = normalizedHeaders.findIndex(function(header) {
+            return header === 'opponent' || header === 'opp' || header.indexOf('opponent') !== -1;
+          });
           const detailColumns = allColumns.filter(function(column) {
             return column.index !== managerColumnIndex;
           }).filter(function(column) {
@@ -568,23 +574,26 @@
                       });
                     };
 
-                    var teamColumns = [];
-                    if (teamRows.length > 0) {
-                      teamColumns = allColumns.filter(function(column) {
-                        if (column.index === managerColumnIndex) {
-                          return true;
-                        }
-                        if (column.index === scoreColumnIndex) {
-                          return columnHasTeamValue(column.index);
-                        }
-                        return columnHasTeamValue(column.index);
-                      });
-                      if (teamColumns.length === 0) {
+                      var teamColumns = [];
+                      if (teamRows.length > 0) {
                         teamColumns = allColumns.filter(function(column) {
-                          return column.index === managerColumnIndex || column.index === scoreColumnIndex;
+                          if (column.index === managerColumnIndex) {
+                            return true;
+                          }
+                          if (column.index === scoreColumnIndex) {
+                            return true;
+                          }
+                          if (column.index === opponentColumnIndex) {
+                            return true;
+                          }
+                          return columnHasTeamValue(column.index);
                         });
+                        if (teamColumns.length === 0) {
+                          teamColumns = allColumns.filter(function(column) {
+                            return column.index === managerColumnIndex || column.index === scoreColumnIndex || column.index === opponentColumnIndex;
+                          });
+                        }
                       }
-                    }
                   ?>
                   <div id="<?!= detailId ?>" class="manager-details" hidden>
                     <? if (detailValues.length > 0) { ?>
@@ -632,10 +641,13 @@
                                        if (!hasValue && column.index === scoreColumnIndex) {
                                          hasValue = value === 0;
                                        }
+                                       var isOpponentColumn = column.index === opponentColumnIndex;
                                   ?>
                                     <td class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>">
                                       <? if (hasValue) { ?>
                                         <?!= value ?>
+                                      <? } else if (isOpponentColumn) { ?>
+                                        
                                       <? } else { ?>
                                         &mdash;
                                       <? } ?>
