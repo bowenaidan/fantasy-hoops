@@ -446,15 +446,18 @@
           const managerColumnIndex = (typeof managerData.managerColumnIndex === 'number') ? managerData.managerColumnIndex : -1;
           const scoreColumnIndex = (typeof managerData.scoreColumnIndex === 'number') ? managerData.scoreColumnIndex : -1;
           const allColumns = headers.map(function(header, idx) {
-            var label = (header && header.toString().trim() !== '') ? header : ' ';
+            var label = (header && header.toString().trim() !== '') ? header : '\u00A0';
             return { label: label, index: idx };
           });
           const normalizedHeaders = headers.map(function(header) {
             return (header || '').toString().trim().toLowerCase();
           });
-          const opponentColumnIndex = normalizedHeaders.findIndex(function(header) {
+          var opponentColumnIndex = normalizedHeaders.findIndex(function(header) {
             return header === 'opponent' || header === 'opp' || header.indexOf('opponent') !== -1;
           });
+          if (opponentColumnIndex === -1 && scoreColumnIndex >= 0 && (scoreColumnIndex + 1) < headers.length) {
+            opponentColumnIndex = scoreColumnIndex + 1;
+          }
           const detailColumns = allColumns.filter(function(column) {
             return column.index !== managerColumnIndex;
           }).filter(function(column) {
@@ -620,7 +623,7 @@
                                        headingLabel = 'Team';
                                      }
                                      if (column.index === opponentColumnIndex) {
-                                       headingLabel = ' ';
+                                       headingLabel = '\u00A0';
                                      }
                                 ?>
                                   <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= headingLabel ?></th>
@@ -650,7 +653,7 @@
                                       <? if (hasValue) { ?>
                                         <?!= value ?>
                                       <? } else if (isOpponentColumn) { ?>
-                                        &nbsp;
+                                        \u00A0
                                       <? } else { ?>
                                         &mdash;
                                       <? } ?>
