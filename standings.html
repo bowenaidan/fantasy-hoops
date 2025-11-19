@@ -446,7 +446,7 @@
           const managerColumnIndex = (typeof managerData.managerColumnIndex === 'number') ? managerData.managerColumnIndex : -1;
           const scoreColumnIndex = (typeof managerData.scoreColumnIndex === 'number') ? managerData.scoreColumnIndex : -1;
           const allColumns = headers.map(function(header, idx) {
-            var label = (header && header.toString().trim() !== '') ? header : ('Column ' + (idx + 1));
+            var label = (header && header.toString().trim() !== '') ? header : ' ';
             return { label: label, index: idx };
           });
           const normalizedHeaders = headers.map(function(header) {
@@ -620,7 +620,7 @@
                                        headingLabel = 'Team';
                                      }
                                      if (column.index === opponentColumnIndex) {
-                                       headingLabel = '';
+                                       headingLabel = ' ';
                                      }
                                 ?>
                                   <th scope="col" class="<?!= (column.index === scoreColumnIndex) ? 'is-primary-score' : '' ?>"><?!= headingLabel ?></th>
@@ -650,7 +650,7 @@
                                       <? if (hasValue) { ?>
                                         <?!= value ?>
                                       <? } else if (isOpponentColumn) { ?>
-                                        
+                                        &nbsp;
                                       <? } else { ?>
                                         &mdash;
                                       <? } ?>
