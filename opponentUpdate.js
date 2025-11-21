@@ -81,16 +81,18 @@ function collectOpponentLabels_(games, rosterSet) {
     if (!game || !game.home || !game.away) return;
     const homeShort = (game.home.names && game.home.names.short) || game.home.alias || game.home.name;
     const awayShort = (game.away.names && game.away.names.short) || game.away.alias || game.away.name;
+    const homeRank = game.home.rank;
+    const awayRank = game.away.rank;
     if (!homeShort || !awayShort) return;
 
     const homeNormalized = normalizeSchoolName_(homeShort);
     const awayNormalized = normalizeSchoolName_(awayShort);
 
     if (rosterSet.has(homeNormalized) && !opponents.has(homeNormalized)) {
-      opponents.set(homeNormalized, `vs ${awayShort}`);
+      opponents.set(homeNormalized, `vs ${awayShort} ${awayRank ? `(${awayRank})` : ''}`.trim());
     }
     if (rosterSet.has(awayNormalized) && !opponents.has(awayNormalized)) {
-      opponents.set(awayNormalized, `@ ${homeShort}`);
+      opponents.set(awayNormalized, `@ ${homeShort} ${homeRank ? `(${homeRank})` : ''}`.trim());
     }
   });
   return opponents;
