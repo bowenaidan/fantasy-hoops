@@ -146,6 +146,13 @@
         flex: 1;
       }
 
+      .manager-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
       .manager-name {
         font-size: 1.05rem;
         font-weight: 600;
@@ -159,6 +166,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        flex: 1;
       }
 
       .manager-name:focus-visible {
@@ -181,7 +189,8 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        margin-top: 6px;
+        margin-top: 0;
+        flex-shrink: 0;
       }
 
       .manager-score-label {
@@ -413,17 +422,22 @@
         .manager-item {
           padding: 8px;
           border-radius: 16px;
-          flex-direction: column;
-          align-items: stretch;
-          gap: 16px;
+          align-items: center;
+          gap: 12px;
         }
 
         .manager-name {
           font-size: 1rem;
         }
 
+        .manager-header {
+          gap: 10px;
+        }
+
         .manager-score {
           font-size: 1.05rem;
+          margin-top: 0;
+          align-self: center;
         }
         .manager-main {
           gap: 6px;
@@ -567,9 +581,21 @@
                     }
                     var detailId = detailIdBase + '-' + Math.random().toString(36).slice(2, 8);
                   ?>
-                  <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>">
-                    <?!= entry.name ?>
-                  </button>
+                  <div class="manager-header">
+                    <button type="button" class="manager-name" aria-expanded="false" aria-controls="<?!= detailId ?>">
+                      <?!= entry.name ?>
+                    </button>
+                    <span class="manager-score">
+                      <? if (primaryColumn) { ?>
+                        <span class="manager-score-label"><?!= primaryColumn.label ?></span>
+                      <? } ?>
+                      <? if (hasDisplayScore) { ?>
+                        <?!= displayScore ?>
+                      <? } else { ?>
+                        &mdash;
+                      <? } ?>
+                    </span>
+                  </div>
                   <?
                     var detailValues = [];
                     detailColumns.forEach(function(column) {
@@ -766,16 +792,6 @@
                     <? } ?>
                   </div>
                 </div>
-                <span class="manager-score">
-                  <? if (primaryColumn) { ?>
-                    <span class="manager-score-label"><?!= primaryColumn.label ?></span>
-                  <? } ?>
-                  <? if (hasDisplayScore) { ?>
-                    <?!= displayScore ?>
-                  <? } else { ?>
-                    &mdash;
-                  <? } ?>
-                </span>
               </li>
             <? }); ?>
           </ul>
