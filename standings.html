@@ -631,14 +631,10 @@
                       var managerColumn = columns.find(function(column) {
                         return column.index === managerColumnIndex;
                       });
-                      var opponentColumn = columns.find(function(column) {
-                        return column.index === opponentColumnIndex;
-                      });
                       var scoreColumn = columns.find(function(column) {
                         return column.index === scoreColumnIndex;
                       });
                       addIfPresent(managerColumn);
-                      addIfPresent(opponentColumn);
                       addIfPresent(scoreColumn);
                       columns.forEach(function(column) {
                         addIfPresent(column);
@@ -655,14 +651,11 @@
                           if (column.index === scoreColumnIndex) {
                             return true;
                           }
-                          if (column.index === opponentColumnIndex) {
-                            return true;
-                          }
                           return columnHasTeamValue(column.index);
                         });
                         if (teamColumns.length === 0) {
                           teamColumns = allColumns.filter(function(column) {
-                            return column.index === managerColumnIndex || column.index === scoreColumnIndex || column.index === opponentColumnIndex;
+                            return column.index === managerColumnIndex || column.index === scoreColumnIndex;
                           });
                         }
                         teamColumns = prioritizeTeamColumns(teamColumns);
@@ -692,15 +685,9 @@
                                      if (column.index === managerColumnIndex && (normalizedLabel.indexOf('manager') !== -1 || normalizedLabel.indexOf('name') !== -1)) {
                                        headingLabel = 'Team';
                                      }
-                                     if (column.index === opponentColumnIndex) {
-                                       headingLabel = ' ';
-                                     }
                                      var headingClasses = [];
                                      if (column.index === scoreColumnIndex) {
                                        headingClasses.push('is-primary-score');
-                                     }
-                                     if (column.index === opponentColumnIndex) {
-                                       headingClasses.push('is-opponent');
                                      }
                                      var headingClassName = headingClasses.join(' ');
                                 ?>
@@ -716,6 +703,15 @@
                                        if (value === null || typeof value === 'undefined') {
                                          value = '';
                                        }
+                                       var opponentValue = (opponentColumnIndex >= 0 && opponentColumnIndex < teamRow.length) ? teamRow[opponentColumnIndex] : '';
+                                       if (opponentValue === null || typeof opponentValue === 'undefined') {
+                                         opponentValue = '';
+                                       }
+                                       var opponentText = opponentValue.toString().trim();
+                                       if (column.index === managerColumnIndex && opponentText !== '') {
+                                         var baseText = value.toString().trim();
+                                         value = baseText ? baseText + ' vs ' + opponentText : opponentText;
+                                       }
                                        var hasValue = false;
                                        if (typeof value === 'string') {
                                          hasValue = value.trim() !== '';
@@ -725,21 +721,15 @@
                                        if (!hasValue && column.index === scoreColumnIndex) {
                                          hasValue = value === 0;
                                        }
-                                       var isOpponentColumn = column.index === opponentColumnIndex;
                                        var cellClasses = [];
                                        if (column.index === scoreColumnIndex) {
                                          cellClasses.push('is-primary-score');
-                                       }
-                                       if (isOpponentColumn) {
-                                         cellClasses.push('is-opponent');
                                        }
                                        var cellClassName = cellClasses.join(' ');
                                   ?>
                                     <td class="<?!= cellClassName ?>">
                                       <? if (hasValue) { ?>
                                         <?!= value ?>
-                                      <? } else if (isOpponentColumn) { ?>
-
                                       <? } else { ?>
                                         &mdash;
                                       <? } ?>
