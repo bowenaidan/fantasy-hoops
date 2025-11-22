@@ -314,6 +314,10 @@
         padding-right: 10px;
       }
 
+      .manager-team-name {
+        font-weight: 700;
+      }
+
       .manager-team-table tbody tr:last-child td {
         border-bottom: none;
       }
@@ -711,9 +715,20 @@
                                          opponentValue = '';
                                        }
                                        var opponentText = opponentValue.toString().trim();
-                                       if (column.index === managerColumnIndex && opponentText !== '') {
+                                       if (column.index === managerColumnIndex) {
                                          var baseText = value.toString().trim();
-                                         value = baseText ? baseText + ' vs ' + opponentText : opponentText;
+                                         var managerText = baseText ? '<span class="manager-team-name">' + baseText + '</span>' : '';
+                                         if (opponentText !== '') {
+                                           if (managerText && opponentText) {
+                                             value = managerText + ' vs ' + opponentText;
+                                           } else if (managerText) {
+                                             value = managerText;
+                                           } else {
+                                             value = opponentText;
+                                           }
+                                         } else if (managerText) {
+                                           value = managerText;
+                                         }
                                        }
                                        var hasValue = false;
                                        if (typeof value === 'string') {
