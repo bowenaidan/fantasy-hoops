@@ -645,6 +645,9 @@
                       var teamColumns = [];
                       if (teamRows.length > 0) {
                         teamColumns = allColumns.filter(function(column) {
+                          if (column.index === opponentColumnIndex) {
+                            return false;
+                          }
                           if (column.index === managerColumnIndex) {
                             return true;
                           }
