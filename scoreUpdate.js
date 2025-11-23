@@ -128,9 +128,9 @@ function saveProcessedGameKeys_(processedGameSet) {
 }
 
 function dailySync(isoDate) {
-  var pointMap = new Map();
-  // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
-  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
+  const targetDate = isoDate || getTodayIsoDate_();
+  const pointMap = new Map();
+  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${targetDate}/all-conf`);
   if (!dayGames || !dayGames.games) return;
   Logger.log(JSON.stringify(dayGames, null, 2));
   const processedGameSet = loadProcessedGameKeys_();
