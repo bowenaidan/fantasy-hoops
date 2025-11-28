@@ -131,6 +131,7 @@ function getGameKey_(game) {
   const candidates = [
     game.id,
     game.gameId,
+    game.gameID,
     game.url,
     game.gameUrl,
     game.boxscoreUrl,
@@ -151,12 +152,46 @@ function getGameKey_(game) {
   return null;
 }
 
+function getTeamPoints_(team) {
+  const candidates = [
+    team?.points,
+    team?.score,
+    team?.currentScore,
+    Array.isArray(team?.linescores)
+      ? team.linescores.reduce((sum, val) => sum + (Number(val) || 0), 0)
+      : null
+  ];
+
+  for (const candidate of candidates) {
+    const numeric = Number(candidate);
+    if (!isNaN(numeric)) return numeric;
+  }
+  return null;
+}
+
 function isGameFinal_(game) {
   if (!game || !game.home || !game.away) return false;
-  return game.currentPeriod === "FINAL"
-    && game.finalMessage === "FINAL"
-    && game.gameState === "final"
-    && (game.home.winner || game.away.winner);
+  const homePoints = getTeamPoints_(game.home);
+  const awayPoints = getTeamPoints_(game.away);
+  if (homePoints !== null && awayPoints !== null) {
+    if (homePoints === awayPoints) return false;
+    const pointsWinnerIsHome = homePoints > awayPoints;
+    const homeWinnerFlag = !!game.home?.winner;
+    const awayWinnerFlag = !!game.away?.winner;
+    if (pointsWinnerIsHome !== homeWinnerFlag) return false;
+    if (pointsWinnerIsHome === awayWinnerFlag) return false;
+  }
+
+  const currentPeriod = (game.currentPeriod || '').toString().toLowerCase();
+  const finalMessage = (game.finalMessage || '').toString().toLowerCase();
+  const gameState = (game.gameState || '').toString().toLowerCase();
+  const clock = (game.contestClock || '').toString();
+  const hasWinner = game.home?.winner === true || game.away?.winner === true;
+
+  return hasWinner
+    && (currentPeriod === 'final' || currentPeriod === 'finished')
+    && (finalMessage === '' || finalMessage === 'final')
+    && (gameState === 'final' || gameState === 'post' || gameState === 'complete' || clock === '0:00');
 }
 
 function calculateGamePoints_(game, winnerIsHome) {
