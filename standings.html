@@ -109,6 +109,62 @@
         backdrop-filter: blur(10px);
       }
 
+      .panel-heading {
+        margin: 0 0 14px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .tab-controls {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+      }
+
+      .tab-list {
+        display: inline-flex;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 6px;
+        gap: 6px;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      }
+
+      .tab-button {
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      }
+
+      .tab-button:hover,
+      .tab-button:focus-visible {
+        background: var(--accent-soft);
+        color: var(--accent);
+        outline: none;
+        transform: translateY(-1px);
+      }
+
+      .tab-button.is-active {
+        background: var(--accent);
+        color: #0b1224;
+        box-shadow: 0 10px 24px rgba(56, 189, 248, 0.35);
+      }
+
+      .tab-panel[hidden] {
+        display: none;
+      }
+
       .manager-list {
         list-style: none;
         margin: 0;
@@ -339,6 +395,74 @@
         font-size: 1.05rem;
       }
 
+      .team-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .team-item {
+        border: 1px solid var(--card-border);
+        border-radius: 18px;
+        padding: 16px 18px;
+        background: rgba(148, 163, 184, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .team-item-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .team-name-with-rank {
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        font-size: 1rem;
+      }
+
+      .team-points {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+
+      .team-points-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .team-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .team-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.15);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
       .scoreboard-table-wrapper {
         margin-top: 28px;
         border: 1px solid var(--card-border);
@@ -490,8 +614,15 @@
           Updated <?= generatedAt ?>
         </div>
       </header>
+      <div class="tab-controls">
+        <div class="tab-list" role="tablist">
+          <button type="button" class="tab-button is-active" data-tab-target="manager-panel" aria-controls="manager-panel" role="tab" aria-selected="true">Managers</button>
+          <button type="button" class="tab-button" data-tab-target="team-panel" aria-controls="team-panel" role="tab" aria-selected="false">Teams</button>
+        </div>
+      </div>
 
-      <section class="card">
+      <section class="card tab-panel" id="manager-panel">
+        <div class="panel-heading">Managers</div>
         <?
           const managerData = (managerScores && typeof managerScores === 'object' && Array.isArray(managerScores.entries))
             ? managerScores
@@ -797,6 +928,55 @@
           </ul>
         <? } ?>
       </section>
+
+      <section class="card tab-panel" id="team-panel" hidden>
+        <div class="panel-heading">Teams</div>
+        <? if (teamEntries && teamEntries.length > 0) { ?>
+          <ul class="team-list">
+            <? teamEntries.forEach(function(teamEntry) { ?>
+              <?
+                var teamName = (teamEntry.team || '').toString().trim();
+                var rankText = (teamEntry.rank || '').toString().trim();
+                var displayName = teamName;
+                if (rankText !== '') {
+                  displayName = teamName ? (teamName + ' (' + rankText + ')') : '(' + rankText + ')';
+                }
+                var rawPoints = teamEntry.points;
+                var hasPoints = !(rawPoints === '' || typeof rawPoints === 'undefined' || rawPoints === null);
+                if (!hasPoints && rawPoints === 0) {
+                  hasPoints = true;
+                }
+                var pointsText = hasPoints ? rawPoints : '';
+                var ownerText = (teamEntry.owner || '').toString().trim();
+                var opponentText = (teamEntry.opponent || '').toString().trim();
+              ?>
+              <li class="team-item">
+                <div class="team-item-header">
+                  <div class="team-name-with-rank"><?!= displayName || 'Team' ?></div>
+                  <div class="team-points">
+                    <? if (hasPoints) { ?>
+                      <span class="team-points-value"><?!= pointsText ?></span>
+                      <span class="team-points-label">pts</span>
+                    <? } else { ?>
+                      <span>&mdash;</span>
+                    <? } ?>
+                  </div>
+                </div>
+                <div class="team-meta">
+                  <? if (ownerText) { ?>
+                    <span class="team-chip">Owner: <?!= ownerText ?></span>
+                  <? } ?>
+                  <? if (opponentText) { ?>
+                    <span class="team-chip">Opp: <?!= opponentText ?></span>
+                  <? } ?>
+                </div>
+              </li>
+            <? }); ?>
+          </ul>
+        <? } else { ?>
+          <div class="empty-state">No team data available.</div>
+        <? } ?>
+      </section>
     </div>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -822,6 +1002,28 @@
             setExpanded(!item.classList.contains('is-expanded'));
           });
           setExpanded(false);
+        });
+
+        var tabButtons = document.querySelectorAll('[data-tab-target]');
+        var panels = document.querySelectorAll('.tab-panel');
+        tabButtons.forEach(function(button) {
+          button.addEventListener('click', function() {
+            var targetId = button.getAttribute('data-tab-target');
+            tabButtons.forEach(function(btn) {
+              var isActive = btn === button;
+              btn.classList.toggle('is-active', isActive);
+              btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            panels.forEach(function(panel) {
+              var isMatch = panel.id === targetId;
+              panel.classList.toggle('is-active', isMatch);
+              if (isMatch) {
+                panel.removeAttribute('hidden');
+              } else {
+                panel.setAttribute('hidden', '');
+              }
+            });
+          });
         });
       });
     </script>
