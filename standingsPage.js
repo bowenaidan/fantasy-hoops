@@ -174,7 +174,7 @@ function extractManagerScores_(standings, managers) {
     };
   });
 
-    const parseScoreForSort = value => {
+  const parseScoreForSort = value => {
     if (typeof value === 'number') {
       return value;
     }
@@ -215,12 +215,108 @@ function extractManagerScores_(standings, managers) {
   };
 }
 
+function getTeamEntries_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('No active spreadsheet found.');
+  }
+  const sheet = ss.getSheetByName('Teams');
+  if (!sheet) {
+    return { entries: [] };
+  }
+
+  const values = sheet.getDataRange().getDisplayValues();
+  if (!values || values.length < 2) {
+    return { entries: [] };
+  }
+
+  const headers = values[0].map((header, idx) => {
+    if (header === null || typeof header === 'undefined') {
+      return `Column ${idx + 1}`;
+    }
+    const stringValue = header.toString();
+    return stringValue.trim() === '' ? `Column ${idx + 1}` : stringValue;
+  });
+
+  const normalizedHeaders = headers.map(header => (header || '').toString().trim().toLowerCase());
+  const findColumnIndex = (candidates, fallbackIndex = -1) => {
+    const idx = normalizedHeaders.findIndex(header => candidates.some(candidate => header === candidate || header.indexOf(candidate) !== -1));
+    if (idx !== -1) return idx;
+    if (fallbackIndex >= 0 && fallbackIndex < headers.length) return fallbackIndex;
+    return -1;
+  };
+
+  const ownerIdx = findColumnIndex(['owner', 'manager']);
+  const teamIdx = findColumnIndex(['team', 'school', 'name'], 1);
+  const pointsIdx = findColumnIndex(['points', 'score', 'total']);
+  const rankIdx = findColumnIndex(['rank', 'ap']);
+  const opponentIdx = findColumnIndex(['opponent', 'opp']);
+
+  const safeCell = (idx, row) => {
+    if (!Array.isArray(row) || idx < 0 || idx >= row.length) return '';
+    const value = row[idx];
+    if (value === null || typeof value === 'undefined') return '';
+    return value;
+  };
+
+  const hasData = value => {
+    if (value === null || typeof value === 'undefined') return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    return value !== '';
+  };
+
+  const parsePoints = value => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const normalized = value.replace(/,/g, '').trim();
+      if (normalized === '') return null;
+      const parsed = parseFloat(normalized);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const entries = values
+    .slice(1)
+    .filter(row => {
+      const teamValue = safeCell(teamIdx, row);
+      return hasData(teamValue);
+    })
+    .map((row, index) => {
+      const pointsValue = safeCell(pointsIdx, row);
+      const numericPoints = parsePoints(pointsValue);
+      return {
+        owner: safeCell(ownerIdx, row),
+        team: safeCell(teamIdx, row),
+        points: pointsValue,
+        numericPoints,
+        rank: safeCell(rankIdx, row),
+        opponent: safeCell(opponentIdx, row),
+        index
+      };
+    })
+    .sort((a, b) => {
+      const scoreA = a.numericPoints === null ? Number.NEGATIVE_INFINITY : a.numericPoints;
+      const scoreB = b.numericPoints === null ? Number.NEGATIVE_INFINITY : b.numericPoints;
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      return a.index - b.index;
+    })
+    .map(entry => {
+      const { numericPoints, ...rest } = entry;
+      return rest;
+    });
+
+  return { entries };
+}
+
 function doGet() {
   const standings = getStandingsData_();
   const managerScores = extractManagerScores_(standings, MANAGERS);
+  const teamStandings = getTeamEntries_();
   const template = HtmlService.createTemplateFromFile('standings');
   template.standings = standings;
   template.managerScores = managerScores;
+  template.teamEntries = Array.isArray(teamStandings.entries) ? teamStandings.entries : [];
   const properties = PropertiesService.getDocumentProperties();
   template.generatedAt = properties.getProperty('updatedAt');
   return template
