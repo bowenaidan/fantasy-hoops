@@ -17,6 +17,13 @@ function loadApPollRankings_() {
     return map;
 }
 
+function normalizeSchoolNameAP_(s) {
+  return (s || '').toString().trim()
+    .replace(/\s*\(.*?\)\s*/g, ' ')
+    .replace(/\s+/g,' ')
+    .replace(/\bState\b/g, 'St.')
+}
+
 function parseApPollRanks_(json) {
   const rankings = [];
   if (!json) return rankings;
@@ -25,7 +32,7 @@ function parseApPollRanks_(json) {
     if (!team) return;
     const numRank = Number(rank);
     if (!numRank || numRank < 1 || numRank > 25) return;
-    const normalized = normalizeSchoolName_(team);
+    const normalized = normalizeSchoolNameAP_(team);
     if (!normalized) return;
     rankings.push({ team: normalized, rank: numRank });
   };
@@ -84,7 +91,7 @@ function applyApPollRanks_(rankMap) {
   const teamRange = sheet.getRange(2, 2, lastRow - 1, 1);
   const teams = teamRange.getValues();
   const rankValues = teams.map(row => {
-    const normalized = normalizeSchoolName_(row[0]);
+    const normalized = normalizeSchoolNameAP_(row[0]);
     const rank = normalized ? rankMap.get(normalized) : null;
     return [rank || ''];
   });
