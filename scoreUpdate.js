@@ -220,7 +220,7 @@ function saveProcessedGameKeys_(processedGameSet) {
   const serialized = JSON.stringify(Array.from(processedGameSet));
   properties.setProperty(PROCESSED_GAME_KEYS_PROP, serialized);
   const timeZone = Session.getScriptTimeZone() || 'America/Chicago';
-  properties.setProperty('updatedAt', Utilities.formatDate(new Date(), timeZone, 'MMMM d, yyyy h:mm a z'));
+  properties.setProperty('updatedAt', Utilities.formatDate(new Date(), timeZone, 'h:mm a z'));
 }
 
 function dailySync(isoDate) {
