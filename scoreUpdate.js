@@ -6,17 +6,38 @@ const SHEET_DRAFT = '2025-2026 DRAFT';
 const PROCESSED_GAME_KEYS_PROP = 'processedGameKeys';
 
 // EDIT: define your tier lists (adjust to your league)
-const HIGH_MAJOR = new Set([
-  'acc','big-12','big-ten','sec','big-east'
-]);
-const HIGH_MID_MAJOR = new Set([
-  'mountain-west','atlantic-10','wcc','american'
-]);
-const TRUE_MID_MAJOR = new Set([
-  'mvc','cusa','ivy-league','big-west','socon','caa', 'sun-belt', 'mac'
-]);
-const LOW_MAJOR = new Set([
-  'wac','big-south','big-sky','southland','horizon','summit-league', 'maac', 'asun', 'ovc', 'patriot', 'america-east', 'swac', 'meac', 'nec'
+const CONFERENCE_TIER_MAP = new Map([
+  ['acc', 'highMajor'],
+  ['big-12', 'highMajor'],
+  ['big-ten', 'highMajor'],
+  ['sec', 'highMajor'],
+  ['big-east', 'highMajor'],
+  ['mountain-west', 'highMid'],
+  ['atlantic-10', 'highMid'],
+  ['wcc', 'highMid'],
+  ['american', 'highMid'],
+  ['mvc', 'trueMid'],
+  ['cusa', 'trueMid'],
+  ['ivy-league', 'trueMid'],
+  ['big-west', 'trueMid'],
+  ['socon', 'trueMid'],
+  ['caa', 'trueMid'],
+  ['sun-belt', 'trueMid'],
+  ['mac', 'trueMid'],
+  ['wac', 'lowMajor'],
+  ['big-south', 'lowMajor'],
+  ['big-sky', 'lowMajor'],
+  ['southland', 'lowMajor'],
+  ['horizon', 'lowMajor'],
+  ['summit-league', 'lowMajor'],
+  ['maac', 'lowMajor'],
+  ['asun', 'lowMajor'],
+  ['ovc', 'lowMajor'],
+  ['patriot', 'lowMajor'],
+  ['america-east', 'lowMajor'],
+  ['swac', 'lowMajor'],
+  ['meac', 'lowMajor'],
+  ['nec', 'lowMajor']
 ]);
 
 const ROSTER = ["UConn", "BYU", "High Point", "Michigan St.", "Saint Louis", "Marquette", "South Fla.", "UC Irvine", "Norfolk St.", "UNCW",
@@ -76,6 +97,35 @@ function normalizeSchoolName_(s) {
     .replace(/\bState\b/g, 'St.')
 }
 
+function getConferenceTier_(seo) {
+  if (!seo) return null;
+  const tier = CONFERENCE_TIER_MAP.get(seo.toString().toLowerCase());
+  if (!tier) return null;
+  switch (tier) {
+    case 'highMajor':
+      return 3;
+    case 'highMid':
+      return 2;
+    case 'trueMid':
+      return 1;
+    case 'lowMajor':
+      return 0;
+    default:
+      return null;
+  }
+}
+
+function buildRosterLookup_() {
+  const lookup = new Map();
+  ROSTER.forEach(name => {
+    const normalized = normalizeSchoolName_(name);
+    if (normalized) {
+      lookup.set(normalized, name);
+    }
+  });
+  return lookup;
+}
+
 function getGameKey_(game) {
   if (!game) return null;
   const candidates = [
@@ -99,6 +149,52 @@ function getGameKey_(game) {
     return `${home}:${away}`;
   }
   return null;
+}
+
+function isGameFinal_(game) {
+  if (!game || !game.home || !game.away) return false;
+  return game.currentPeriod === "FINAL"
+    && game.finalMessage === "FINAL"
+    && game.gameState === "final"
+    && (game.home.winner || game.away.winner);
+}
+
+function calculateGamePoints_(game, winnerIsHome) {
+  const homeConference = game.home?.conferences?.[0]?.conferenceSeo;
+  const awayConference = game.away?.conferences?.[0]?.conferenceSeo;
+  const loserRank = winnerIsHome ? game.away?.rank : game.home?.rank;
+  let gamePoints = 0;
+
+  if (homeConference && awayConference && homeConference === awayConference) {
+    const tierKey = CONFERENCE_TIER_MAP.get(homeConference);
+    if (tierKey && CONF_POINTS[tierKey]) {
+      gamePoints = CONF_POINTS[tierKey][winnerIsHome ? 'home' : 'road'];
+    }
+  } else {
+    const winnerConference = winnerIsHome ? homeConference : awayConference;
+    const loserConference = winnerIsHome ? awayConference : homeConference;
+    const winnerTier = getConferenceTier_(winnerConference);
+    const loserTier = getConferenceTier_(loserConference);
+    const normalizedWinnerTier = (winnerTier === null || typeof winnerTier === 'undefined') ? -1 : winnerTier;
+    const normalizedLoserTier = (loserTier === null || typeof loserTier === 'undefined') ? -1 : loserTier;
+    const confDiff = normalizedLoserTier - normalizedWinnerTier;
+    if (confDiff + 1 > 0) {
+      gamePoints = (confDiff + 1) * 2;
+    }
+    if (normalizedWinnerTier === -1) {
+      gamePoints -= 4;
+    }
+  }
+
+  if (loserRank !== "" && loserRank !== null && loserRank !== "null" && loserRank <= 25) {
+    if (loserRank <= 10) {
+      gamePoints += 5;
+    } else {
+      gamePoints += 2.5;
+    }
+  }
+
+  return gamePoints;
 }
 
 function loadProcessedGameKeys_() {
@@ -128,86 +224,44 @@ function saveProcessedGameKeys_(processedGameSet) {
 }
 
 function dailySync(isoDate) {
-  const targetDate = isoDate || getTodayIsoDate_();
   const pointMap = new Map();
-  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${targetDate}/all-conf`);
+  const rosterLookup = buildRosterLookup_();
+  // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
+  const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
   if (!dayGames || !dayGames.games) return;
-  Logger.log(JSON.stringify(dayGames, null, 2));
   const processedGameSet = loadProcessedGameKeys_();
-  const roster = ROSTER;
-  for (const team of roster) {
-    let points = 0;
-    for (const games of dayGames.games) {
-      if (games.game.currentPeriod == "FINAL" 
-        && games.game.finalMessage == "FINAL" 
-        && games.game.gameState == "final" 
-        && (games.game.home.winner || games.game.away.winner)){
-        const gameKey = getGameKey_(games.game);
-        if (gameKey && processedGameSet.has(gameKey)) {
-          continue;
-        }
-        const home = games.game.home.names.short;
-        const away = games.game.away.names.short;
-        const winner = games.game.home.winner ? home : away;
-        const loser = games.game.home.winner ? away : home;
-        const loserRank = loser === away ? games.game.away.rank : games.game.home.rank;
-        if (winner == team){
-          const homeConference = games.game.home.conferences[0].conferenceSeo;
-          const awayConference = games.game.away.conferences[0].conferenceSeo;
-          const winnerConference = (winner === home) ? homeConference : awayConference;
-          const loserConference = (winner === home) ? awayConference : homeConference;
-          let gamePoints = 0;
-          if (homeConference == awayConference){
-            // check conference tier
-            const tier = HIGH_MAJOR.has(homeConference) ? 'highMajor' :
-                            HIGH_MID_MAJOR.has(homeConference) ? 'highMid' :
-                            TRUE_MID_MAJOR.has(homeConference) ? 'trueMid' :
-                            LOW_MAJOR.has(homeConference) ? 'lowMajor' :
-                            null;
-            if (tier) {
-              gamePoints = CONF_POINTS[tier][winner === home ? 'home' : 'road'];
-            }
-          }
-          else {
-            const winnerTier = HIGH_MAJOR.has(winnerConference) ? 3 :
-                            HIGH_MID_MAJOR.has(winnerConference) ? 2 :
-                            TRUE_MID_MAJOR.has(winnerConference) ? 1 :
-                            LOW_MAJOR.has(winnerConference) ? 0 :
-                            -1;
-            const loserTier = HIGH_MAJOR.has(loserConference) ? 3 :
-                            HIGH_MID_MAJOR.has(loserConference) ? 2 :
-                            TRUE_MID_MAJOR.has(loserConference) ? 1 :
-                            LOW_MAJOR.has(loserConference) ? 0 :
-                            -1;
-            const confDiff = loserTier - winnerTier;
-            if (confDiff + 1 > 0) {
-              gamePoints = (confDiff + 1) * 2;
-            }
-            if (winnerTier == -1) {
-              gamePoints = gamePoints - 4;
-            }
-          }
-          if (loserRank != "" && loserRank != null && loserRank != "null" && loserRank <= 25){
-            if (loserRank <= 10) {
-              gamePoints = gamePoints + 5;
-            }
-            else {
-              gamePoints = gamePoints + 2.5
-            }
-          }
-          points += gamePoints;
-          if (gameKey) {
-            processedGameSet.add(gameKey);
-          }
-          break;
-        }
-      }
+
+  dayGames.games.forEach(wrapper => {
+    const game = wrapper.game || wrapper;
+    if (!isGameFinal_(game)) return;
+
+    const gameKey = getGameKey_(game);
+    if (gameKey && processedGameSet.has(gameKey)) return;
+
+    const home = game.home?.names?.short;
+    const away = game.away?.names?.short;
+    if (!home || !away) return;
+
+    const winnerIsHome = !!game.home?.winner;
+    const winnerName = winnerIsHome ? home : away;
+    const normalizedWinner = normalizeSchoolName_(winnerName);
+    const rosterName = rosterLookup.get(normalizedWinner);
+    if (!rosterName) return;
+
+    const gamePoints = calculateGamePoints_(game, winnerIsHome);
+    pointMap.set(rosterName, (pointMap.get(rosterName) || 0) + gamePoints);
+
+    if (gameKey) {
+      processedGameSet.add(gameKey);
     }
-    Logger.log(team + ": " + points);
-    pointMap.set(team, points);
+  });
+
+  if (pointMap.size === 0) {
+    Logger.log('No roster winners found for the provided date.');
+    return;
   }
+
   Logger.log(JSON.stringify(Array.from(pointMap), null, 2));
-  Logger.log(dayGames);
   updateStandings_(pointMap);
   saveProcessedGameKeys_(processedGameSet);
 }
