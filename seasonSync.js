@@ -39,7 +39,6 @@ function runSeasonDailySync_(startIsoDate, endIsoDate, options) {
 function resetProcessedGameKeys() {
   const properties = PropertiesService.getDocumentProperties();
   properties.deleteProperty(PROCESSED_GAME_KEYS_PROP);
-  properties.deleteProperty('updatedAt');
 }
 
 function parseIsoDate_(isoDate) {
