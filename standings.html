@@ -995,7 +995,7 @@
                 var pointsText = hasPoints ? rawPoints : '';
                 var ownerText = (teamEntry.owner || '').toString().trim();
                 var opponentText = (teamEntry.opponent || '').toString().trim();
-                var searchTokens = [displayName, ownerText, opponentText, rankText, pointsText]
+                var searchTokens = [displayName, ownerText, opponentText, rankText]
                   .filter(function(value) { return value !== null && typeof value !== 'undefined'; })
                   .map(function(value) { return value.toString().trim(); })
                   .filter(function(text) { return text !== ''; })
