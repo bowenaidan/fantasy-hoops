@@ -128,18 +128,10 @@ function buildRosterLookup_() {
 
 function getGameKey_(game) {
   if (!game) return null;
-  const candidates = [
-    game.id,
-    game.gameId,
-    game.gameID,
-    game.url,
-    game.gameUrl,
-    game.boxscoreUrl,
-    game.summaryUrl
-  ];
-  for (const candidate of candidates) {
-    if (candidate) return candidate.toString();
-  }
+  const gameID = game.gameID;
+
+  if (gameID) return gameID.toString();
+
   const home = game.home.names.short;
   const away = game.away.names.short;
   const startEpoch = game.startTimeEpoch;
@@ -154,11 +146,12 @@ function getGameKey_(game) {
 
 function getTeamPoints_(team) {
   const score = team?.score;
-
   const numeric = Number(score);
-  if (!isNaN(numeric)) return numeric;
-  
-  return null;
+  if (!isNaN(numeric)) {
+    return numeric;
+  } else {
+    return null;
+  }
 }
 
 function isGameFinal_(game) {
