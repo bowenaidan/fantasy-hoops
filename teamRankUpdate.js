@@ -18,10 +18,11 @@ function loadApPollRankings_() {
 }
 
 function normalizeSchoolNameAP_(s) {
-  return (s || '').toString().trim()
+  return (s || '').toString()
     .replace(/\s*\(.*?\)\s*/g, ' ')
     .replace(/\s+/g,' ')
     .replace(/\bState\b/g, 'St.')
+    .trim()
 }
 
 function parseApPollRanks_(json) {
@@ -97,4 +98,5 @@ function applyApPollRanks_(rankMap) {
   });
 
   sheet.getRange(2, 4, rankValues.length, 1).setValues(rankValues);
+  Logger.log(JSON.stringify(Array.from(rankMap), null, 2))
 }
