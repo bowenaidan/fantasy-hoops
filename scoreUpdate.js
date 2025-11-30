@@ -153,19 +153,11 @@ function getGameKey_(game) {
 }
 
 function getTeamPoints_(team) {
-  const candidates = [
-    team?.points,
-    team?.score,
-    team?.currentScore,
-    Array.isArray(team?.linescores)
-      ? team.linescores.reduce((sum, val) => sum + (Number(val) || 0), 0)
-      : null
-  ];
+  const score = team?.score;
 
-  for (const candidate of candidates) {
-    const numeric = Number(candidate);
-    if (!isNaN(numeric)) return numeric;
-  }
+  const numeric = Number(score);
+  if (!isNaN(numeric)) return numeric;
+  
   return null;
 }
 
