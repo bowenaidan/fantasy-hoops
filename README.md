@@ -1,0 +1,2 @@
+# Fantasy Hoops
+This repo serves as a customized fantasy game made for college basektball. The rules are hardcoded and uses the API found at https://ncaa-api.henrygd.me/openapi to gather data from the NCAA website to automatically update scores. The application is entirely written in Google Apps Script and hosted in a Google sheet. The Google sheet holds all the application data as well as the Apps Script code as an extension.
