@@ -1,6 +1,16 @@
 function readTable(sheetName) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    throw new Error(
+      'readTable: Sheet not found: "' + sheetName + '" in spreadsheet "' + ss.getName() + '"'
+    );
+  }
+
   const values = sheet.getDataRange().getValues();
+  if (values.length === 0) return [];  // optional safety
+
   const headers = values.shift();
 
   return values.map(row => {
