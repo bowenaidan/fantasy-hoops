@@ -16,16 +16,4 @@ function resetStandingsToZero() {
   });
 
   writeTable(SHEET_TEAMS, teams)
-
-  // const lastRow = sheet.getLastRow();
-  // const lastCol = sheet.getLastColumn();
-  // if (lastRow === 0 || lastCol === 0) return;
-
-  // const range = sheet.getRange(1, 1, lastRow, lastCol);
-  // const values = range.getValues();
-  // const resetValues = values.map(row => row.map(cell => {
-  //   if (typeof cell === 'number' && !isNaN(cell)) return 0;
-  //   return cell;
-  // }));
-  // range.setValues(resetValues);
 }
