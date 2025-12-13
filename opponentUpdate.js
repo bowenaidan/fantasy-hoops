@@ -132,3 +132,21 @@ function settleScores(sheetName){
     rows.points_today = 0;
   });
 }
+
+function calculateLostPoints() {
+  let teams = readTable(SHEET_TEAMS);
+  let losses = readTable(BUY_GAME_LOSSES);
+
+  losses.forEach(row => {
+    let teamObj = teams.find(t => t.team === row.team);
+    Logger.log(teamObj);
+
+    if (teamObj) {
+      teamObj.points = Number(teamObj.points) + Number(row.points);
+    } else {
+      Logger.log("Team not found in TEAMS sheet: " + row.team);
+    }
+  });
+
+  writeTable(SHEET_TEAMS, teams);
+}
