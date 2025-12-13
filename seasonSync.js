@@ -1,5 +1,3 @@
-const DEFAULT_SEASON_START_ISO = '2025/11/03';
-
 function seasonSyncRunner(options) {
   runSeasonDailySync_(DEFAULT_SEASON_START_ISO, getTodayIsoDate_(), options || {});
 }

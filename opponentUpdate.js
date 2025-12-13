@@ -1,5 +1,3 @@
-const TABLE_TEAMS = 'TEAMS';
-
 function updateOpponentCellsRunner() {
   const isoDate = getTodayIsoDate_();
   updateOpponentCellsForDate(isoDate);

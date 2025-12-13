@@ -1,5 +1,3 @@
-const AP_POLL_ENDPOINT = `${NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`;
-
 function updateApPollRanksRunner() {
   const rankMap = loadApPollRankings_();
   if (!rankMap || rankMap.size === 0) {
