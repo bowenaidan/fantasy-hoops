@@ -194,14 +194,9 @@
   <script>
     const columns = [
       'team',
-      'conference',
-      'points',
-      'points_today',
       'potential_points',
-      'rank',
       'opponent',
-      'opponent_rank',
-      'opponent_conference',
+      'points',
     ];
 
     function renderManagerTotals(managerTotals) {
@@ -280,7 +275,24 @@
             const row = document.createElement('tr');
             columns.forEach(col => {
               const td = document.createElement('td');
-              td.textContent = team[col] ?? '';
+              if (col === 'team') {
+                const teamName = team[col] ?? '';
+                const rank = team?.rank;
+                td.textContent = rank ? `${teamName} (${rank})` : teamName;
+              } 
+              else if (col === 'opponent') {
+                const opponentName = team[col] ?? '';
+                const opponentRank = team?.opponent_rank;
+                td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+              }
+              else if (col === 'points') {
+                const pointsToday = Number(team.points_today) || 0;
+                const pointsTodayText =
+                  pointsToday > 0 ? ` +${pointsToday}` : pointsToday < 0 ? ` ${pointsToday}` : '';
+                td.textContent = `${team[col] ?? ''}${pointsTodayText}`;
+              } else {
+                td.textContent = team[col] ?? '';
+              }
               row.appendChild(td);
             });
             tbody.appendChild(row);
