@@ -1,7 +1,7 @@
 /***** CONFIG *****/
 const NCAA_API_BASE = 'https://ncaa-api.henrygd.me'; // public host (5 rps)
 const SHEET_POINTS = 'Point Structure';
-const SHEET_STANDINGS = 'Standings';
+const SHEET_TEAMS = 'TEAMS';
 const SHEET_DRAFT = '2025-2026 DRAFT';
 const PROCESSED_GAME_KEYS_PROP = 'processedGameKeys';
 
@@ -288,45 +288,41 @@ function dailySync(isoDate) {
 
 function updateStandings_(pointMap) {
   if (!pointMap || pointMap.size === 0) return;
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) {
-    Logger.log('No active spreadsheet.');
+
+  let teams;
+  try {
+    teams = readTable(SHEET_TEAMS);
+  } catch (err) {
+    Logger.log(err);
     return;
   }
-  const sheet = ss.getSheetByName(SHEET_STANDINGS);
-  if (!sheet) {
-    Logger.log(`Sheet not found: ${SHEET_STANDINGS}`);
+
+  if (!Array.isArray(teams) || teams.length === 0) {
+    Logger.log('No teams found to update.');
     return;
   }
-  const lastRow = sheet.getLastRow();
-  const lastCol = sheet.getLastColumn();
-  if (lastRow === 0 || lastCol < 2) return;
 
-  const values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-  const indexByTeam = new Map();
-
-  values.forEach((row, rowIdx) => {
-    row.forEach((cell, colIdx) => {
-      if (colIdx >= row.length - 1) return; // need a points column to the right
-      if (typeof cell !== 'string') return;
-      const teamName = normalizeSchoolName_(cell);
-      if (!teamName) return;
-      const pointsCellValue = row[colIdx + 1];
-      const currentTotal = Number(pointsCellValue) || 0;
-      indexByTeam.set(teamName, { row: rowIdx + 1, col: colIdx + 2, total: currentTotal });
-    });
+  const normalizedIndex = new Map();
+  teams.forEach((row, idx) => {
+    const normalizedTeam = normalizeSchoolName_(row.team);
+    if (normalizedTeam) {
+      normalizedIndex.set(normalizedTeam, idx);
+    }
   });
 
   pointMap.forEach((points, team) => {
     if (typeof points !== 'number' || isNaN(points)) return;
     const normalizedTeam = normalizeSchoolName_(team);
-    const entry = indexByTeam.get(normalizedTeam);
-    if (!entry) {
+    const rowIndex = normalizedIndex.get(normalizedTeam);
+
+    if (typeof rowIndex === 'undefined') {
       Logger.log(`Team not found in standings: ${team}`);
       return;
     }
-    const newTotal = entry.total + points;
-    sheet.getRange(entry.row, entry.col).setValue(newTotal);
-    entry.total = newTotal;
+
+    const currentPoints = Number(teams[rowIndex].points) || 0;
+    teams[rowIndex].points = currentPoints + points;
   });
+
+  writeTable(SHEET_TEAMS, teams);
 }
