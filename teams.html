@@ -3,13 +3,20 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fantasy Hoops Teams</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 24px;
+      margin: 0;
       color: #0f172a;
       background: #f8fafc;
+    }
+
+    .page {
+      margin: 0 auto;
+      padding: 20px 16px 32px;
+      max-width: 1100px;
     }
 
     h1 {
@@ -21,17 +28,24 @@
       color: #475569;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .table-wrapper {
+      overflow-x: auto;
       margin-top: 16px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
       background: white;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
     th, td {
       padding: 10px 12px;
-      border: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
       text-align: left;
       font-size: 14px;
     }
@@ -40,6 +54,9 @@
       background: #e2e8f0;
       font-weight: 600;
       color: #0f172a;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
 
     tbody tr:nth-child(even) {
@@ -76,30 +93,53 @@
       border-radius: 4px;
       margin-top: 12px;
     }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      th, td {
+        font-size: 13px;
+        padding: 8px 10px;
+      }
+
+      .manager-card {
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Teams</h1>
-  <p class="description">
-    Live view of the TEAMS sheet with manager totals for quick reference.
-  </p>
+  <div class="page">
+    <h1>Teams</h1>
+    <p class="description">
+      Live view of the TEAMS sheet with manager totals for quick reference.
+    </p>
 
-  <section>
-    <h2>Manager totals</h2>
-    <ul id="managerTotals" class="manager-totals"></ul>
-  </section>
+    <section>
+      <h2>Manager totals</h2>
+      <ul id="managerTotals" class="manager-totals"></ul>
+    </section>
 
-  <section>
-    <h2>Teams table</h2>
-    <table aria-label="Teams table">
-      <thead>
-        <tr id="tableHeader"></tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </section>
+    <section>
+      <h2>Teams table</h2>
+      <div class="table-wrapper">
+        <table aria-label="Teams table">
+          <thead>
+            <tr id="tableHeader"></tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
 
-  <div id="error" class="error" style="display:none;"></div>
+    <div id="error" class="error" style="display:none;"></div>
+  </div>
 
   <script>
     const columns = [
