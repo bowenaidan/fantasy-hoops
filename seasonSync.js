@@ -32,6 +32,7 @@ function runSeasonDailySync_(startIsoDate, endIsoDate, options) {
     const isoDate = formatIsoDate_(cursor);
     Logger.log(`Running daily sync for ${isoDate}`);
     dailySync(isoDate);
+    updateOpponentCellsForDate(isoDate);
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
 }
