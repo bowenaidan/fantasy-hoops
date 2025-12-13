@@ -18,6 +18,7 @@ function updateOpponentCellsForDate(isoDate) {
     Logger.log(err);
     return;
   }
+  settleScores(teams);
 
   if (!Array.isArray(teams) || teams.length === 0) {
     Logger.log('No teams found in standings sheet.');
@@ -119,4 +120,15 @@ function getTodayIsoDate_() {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}/${mm}/${dd}`;
+}
+
+function settleScores(sheetName){
+  const teams = sheetName;
+  teams.forEach(rows => {
+    rows.points = rows.points + rows.points_today;
+    if (rows.points_today){
+      Logger.log(`${rows.team} settling ${rows.points_today}.`);
+    }
+    rows.points_today = 0;
+  });
 }
