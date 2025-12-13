@@ -1,12 +1,11 @@
 /***** CONFIG *****/
-const NCAA_API_BASE = 'https://ncaa-api.henrygd.me'; // public host (5 rps)
+const NCAA_API_BASE = 'https://ncaa-api.henrygd.me';
 const SHEET_POINTS = 'Point Structure';
 const SHEET_TEAMS = 'TEAMS';
 const BUY_GAME_LOSSES = 'BUY_GAME_LOSSES';
 const SHEET_DRAFT = '2025-2026 DRAFT';
 const PROCESSED_GAME_KEYS_PROP = 'processedGameKeys';
 
-// EDIT: define your tier lists (adjust to your league)
 const CONFERENCE_TIER_MAP = new Map([
   ['acc', 'highMajor'],
   ['big-12', 'highMajor'],
