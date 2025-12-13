@@ -28,41 +28,6 @@
       color: #475569;
     }
 
-    .table-wrapper {
-      overflow-x: auto;
-      margin-top: 16px;
-      border-radius: 6px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 720px;
-    }
-
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background: #e2e8f0;
-      font-weight: 600;
-      color: #0f172a;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f8fafc;
-    }
-
     .manager-totals {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -83,6 +48,93 @@
     .manager-name {
       margin: 0 0 6px;
       font-weight: 600;
+    }
+
+    .dropdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    details.manager-dropdown {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .manager-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .summary-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-title .manager-name {
+      margin: 0;
+    }
+
+    .manager-points {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .summary-hint {
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .manager-teams {
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 14px 14px;
+      background: #f8fafc;
+    }
+
+    .teams-table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #e2e8f0;
+      font-weight: 600;
+      color: #0f172a;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fff;
+    }
+
+    .empty-state {
+      color: #475569;
+      font-size: 14px;
+      margin: 6px 0 0;
     }
 
     .error {
@@ -111,6 +163,11 @@
       .manager-card {
         padding: 10px;
       }
+
+      .manager-summary {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -118,7 +175,7 @@
   <div class="page">
     <h1>Teams</h1>
     <p class="description">
-      Live view of the TEAMS sheet with manager totals for quick reference.
+      Live view of the TEAMS sheet with teams grouped by manager. Expand a manager to view their teams.
     </p>
 
     <section>
@@ -127,15 +184,8 @@
     </section>
 
     <section>
-      <h2>Teams table</h2>
-      <div class="table-wrapper">
-        <table aria-label="Teams table">
-          <thead>
-            <tr id="tableHeader"></tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
+      <h2>Teams by manager</h2>
+      <div id="managerDropdowns" class="dropdown-list"></div>
     </section>
 
     <div id="error" class="error" style="display:none;"></div>
@@ -144,7 +194,6 @@
   <script>
     const columns = [
       'team',
-      'manager',
       'conference',
       'points',
       'points_today',
@@ -170,26 +219,82 @@
       });
     }
 
-    function renderTable(teams) {
-      const headerRow = document.getElementById('tableHeader');
-      headerRow.innerHTML = '';
-      columns.forEach(col => {
-        const th = document.createElement('th');
-        th.textContent = col.replace(/_/g, ' ');
-        headerRow.appendChild(th);
-      });
+    function renderManagerDropdowns(managerTotals, teams) {
+      const dropdownList = document.getElementById('managerDropdowns');
+      dropdownList.innerHTML = '';
 
-      const body = document.getElementById('tableBody');
-      body.innerHTML = '';
+      const teamsByManager = teams.reduce((acc, team) => {
+        const manager = team?.manager || 'Unassigned';
+        if (!acc.has(manager)) {
+          acc.set(manager, []);
+        }
+        acc.get(manager).push(team);
+        return acc;
+      }, new Map());
 
-      teams.forEach(team => {
-        const row = document.createElement('tr');
-        columns.forEach(col => {
-          const td = document.createElement('td');
-          td.textContent = team[col] ?? '';
-          row.appendChild(td);
+      managerTotals.forEach(({ manager, totalPoints }) => {
+        const managerTeams = (teamsByManager.get(manager) || []).sort((a, b) => {
+          const pointsA = Number(a?.points) || 0;
+          const pointsB = Number(b?.points) || 0;
+          if (pointsB !== pointsA) return pointsB - pointsA;
+          return (a?.team || '').localeCompare(b?.team || '');
         });
-        body.appendChild(row);
+
+        const details = document.createElement('details');
+        details.className = 'manager-dropdown';
+
+        const summary = document.createElement('summary');
+        summary.className = 'manager-summary';
+        summary.innerHTML = `
+          <div class="summary-title">
+            <p class="manager-name">${manager}</p>
+            <span class="summary-hint">Click to view team details</span>
+          </div>
+          <span class="manager-points">${totalPoints} pts</span>
+        `;
+
+        const teamsContainer = document.createElement('div');
+        teamsContainer.className = 'manager-teams';
+
+        if (!managerTeams.length) {
+          const empty = document.createElement('p');
+          empty.className = 'empty-state';
+          empty.textContent = 'No teams assigned to this manager.';
+          teamsContainer.appendChild(empty);
+        } else {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'teams-table-wrapper';
+
+          const table = document.createElement('table');
+          const thead = document.createElement('thead');
+          const headerRow = document.createElement('tr');
+          columns.forEach(col => {
+            const th = document.createElement('th');
+            th.textContent = col.replace(/_/g, ' ');
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+
+          const tbody = document.createElement('tbody');
+          managerTeams.forEach(team => {
+            const row = document.createElement('tr');
+            columns.forEach(col => {
+              const td = document.createElement('td');
+              td.textContent = team[col] ?? '';
+              row.appendChild(td);
+            });
+            tbody.appendChild(row);
+          });
+
+          table.appendChild(thead);
+          table.appendChild(tbody);
+          wrapper.appendChild(table);
+          teamsContainer.appendChild(wrapper);
+        }
+
+        details.appendChild(summary);
+        details.appendChild(teamsContainer);
+        dropdownList.appendChild(details);
       });
     }
 
@@ -203,7 +308,7 @@
       google.script.run
         .withSuccessHandler(({ teams, managerTotals }) => {
           renderManagerTotals(managerTotals);
-          renderTable(teams);
+          renderManagerDropdowns(managerTotals, teams);
         })
         .withFailureHandler(err => {
           const message = err && err.message ? err.message : 'Unable to load teams data.';
