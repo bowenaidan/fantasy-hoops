@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Fantasy Hoops Teams</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .description {
+      margin-top: 0;
+      color: #475569;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #e2e8f0;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .manager-totals {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .manager-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .manager-name {
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 8px 12px;
+      border: 1px solid #fecdd3;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Teams</h1>
+  <p class="description">
+    Live view of the TEAMS sheet with manager totals for quick reference.
+  </p>
+
+  <section>
+    <h2>Manager totals</h2>
+    <ul id="managerTotals" class="manager-totals"></ul>
+  </section>
+
+  <section>
+    <h2>Teams table</h2>
+    <table aria-label="Teams table">
+      <thead>
+        <tr id="tableHeader"></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </section>
+
+  <div id="error" class="error" style="display:none;"></div>
+
+  <script>
+    const columns = [
+      'team',
+      'manager',
+      'conference',
+      'points',
+      'points_today',
+      'potential_points',
+      'rank',
+      'opponent',
+      'opponent_rank',
+      'opponent_conference',
+    ];
+
+    function renderManagerTotals(managerTotals) {
+      const list = document.getElementById('managerTotals');
+      list.innerHTML = '';
+
+      managerTotals.forEach(({ manager, totalPoints }) => {
+        const item = document.createElement('li');
+        item.className = 'manager-card';
+        item.innerHTML = `
+          <p class="manager-name">${manager}</p>
+          <div><strong>Total Points:</strong> ${totalPoints}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function renderTable(teams) {
+      const headerRow = document.getElementById('tableHeader');
+      headerRow.innerHTML = '';
+      columns.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = col.replace(/_/g, ' ');
+        headerRow.appendChild(th);
+      });
+
+      const body = document.getElementById('tableBody');
+      body.innerHTML = '';
+
+      teams.forEach(team => {
+        const row = document.createElement('tr');
+        columns.forEach(col => {
+          const td = document.createElement('td');
+          td.textContent = team[col] ?? '';
+          row.appendChild(td);
+        });
+        body.appendChild(row);
+      });
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+    }
+
+    function initialize() {
+      google.script.run
+        .withSuccessHandler(({ teams, managerTotals }) => {
+          renderManagerTotals(managerTotals);
+          renderTable(teams);
+        })
+        .withFailureHandler(err => {
+          const message = err && err.message ? err.message : 'Unable to load teams data.';
+          showError(message);
+        })
+        .getTeamsPageData();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
