@@ -10,11 +10,11 @@ function updateApPollRanksRunner() {
 }
 
 function loadApPollRankings_() {
-    const json = fetchJson_(AP_POLL_ENDPOINT);
-    const entries = parseApPollRanks_(json);
-    const map = new Map();
-    entries.forEach(entry => map.set(entry.team, entry.rank));
-    return map;
+  const json = fetchJson_(AP_POLL_ENDPOINT);
+  const entries = parseApPollRanks_(json);
+  const map = new Map();
+  entries.forEach(entry => map.set(entry.team, entry.rank));
+  return map;
 }
 
 function normalizeSchoolNameAP_(s) {
@@ -73,30 +73,41 @@ function parseApPollRanks_(json) {
 }
 
 function applyApPollRanks_(rankMap) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) {
-    Logger.log('No active spreadsheet.');
-    return;
-  }
-  const sheet = ss.getSheetByName('Teams');
-  if (!sheet) {
-    Logger.log('Sheet not found: Teams');
-    return;
-  }
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) {
-    Logger.log('No team rows found.');
+  let teams;
+  try {
+    teams = readTable('TEAMS');
+  } catch (err) {
+    Logger.log(err);
     return;
   }
 
-  const teamRange = sheet.getRange(2, 2, lastRow - 1, 1);
-  const teams = teamRange.getValues();
-  const rankValues = teams.map(row => {
-    const normalized = normalizeSchoolNameAP_(row[0]);
-    const rank = normalized ? rankMap.get(normalized) : null;
-    return [rank || ''];
+  if (!Array.isArray(teams) || teams.length === 0) {
+    Logger.log('No teams found in TEAMS table.');
+    return;
+  }
+
+  const normalizedIndex = new Map();
+  teams.forEach((row, idx) => {
+    const normalized = normalizeSchoolNameAP_(row.team);
+    if (normalized) {
+      normalizedIndex.set(normalized, idx);
+    }
   });
 
-  sheet.getRange(2, 4, rankValues.length, 1).setValues(rankValues);
-  Logger.log(JSON.stringify(Array.from(rankMap), null, 2))
+  let updated = false;
+  normalizedIndex.forEach((rowIdx, teamName) => {
+    const rank = rankMap.get(teamName) || '';
+    if (teams[rowIdx].rank !== rank) {
+      teams[rowIdx].rank = rank;
+      updated = true;
+    }
+  });
+
+  if (!updated) {
+    Logger.log('No AP rank changes found.');
+    return;
+  }
+
+  writeTable('TEAMS', teams);
+  Logger.log('AP poll ranks applied to TEAMS table.');
 }
