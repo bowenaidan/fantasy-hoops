@@ -249,14 +249,14 @@ function dailySync(isoDate) {
   // /scoreboard/basketball-men/d1/yyyy/mm/dd/all-conf
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
   if (!dayGames || !dayGames.games) return;
-  const processedGameSet = loadProcessedGameKeys_();
+  // const processedGameSet = loadProcessedGameKeys_();
 
   dayGames.games.forEach(wrapper => {
     const game = wrapper.game || wrapper;
     if (!isGameFinal_(game)) return;
 
-    const gameKey = getGameKey_(game);
-    if (gameKey && processedGameSet.has(gameKey)) return;
+    // const gameKey = getGameKey_(game);
+    // if (gameKey && processedGameSet.has(gameKey)) return;
 
     const home = game.home?.names?.short;
     const away = game.away?.names?.short;
@@ -271,9 +271,9 @@ function dailySync(isoDate) {
     const gamePoints = calculateGamePoints_(game, winnerIsHome);
     pointMap.set(rosterName, (pointMap.get(rosterName) || 0) + gamePoints);
 
-    if (gameKey) {
-      processedGameSet.add(gameKey);
-    }
+    // if (gameKey) {
+    //   processedGameSet.add(gameKey);
+    // }
   });
 
   if (pointMap.size === 0) {
@@ -283,7 +283,7 @@ function dailySync(isoDate) {
 
   Logger.log(JSON.stringify(Array.from(pointMap), null, 2));
   updateStandings_(pointMap);
-  saveProcessedGameKeys_(processedGameSet);
+  // saveProcessedGameKeys_(processedGameSet);
 }
 
 function updateStandings_(pointMap) {
@@ -310,9 +310,9 @@ function updateStandings_(pointMap) {
     }
   });
 
-  teams.forEach(row => {
-    row.points_today = 0;
-  });
+  // teams.forEach(row => {
+  //   row.points_today = 0;
+  // });
 
   pointMap.forEach((points, team) => {
     if (typeof points !== 'number' || isNaN(points)) return;
@@ -324,9 +324,13 @@ function updateStandings_(pointMap) {
       return;
     }
 
-    const currentPoints = Number(teams[rowIndex].points) || 0;
-    teams[rowIndex].points = currentPoints + points;
-    teams[rowIndex].points_today = (Number(teams[rowIndex].points_today) || 0) + points;
+    // const currentPoints = Number(teams[rowIndex].points) || 0;
+    // teams[rowIndex].points = currentPoints + points;
+    // teams[rowIndex].points_today = (Number(teams[rowIndex].points_today) || 0) + points;
+    if (teams[rowIndex].points_today != points) {
+      teams[rowIndex].points_today = points;
+      Logger.log(`${team} : ${points}`);
+    }
   });
 
   writeTable(SHEET_TEAMS, teams);
