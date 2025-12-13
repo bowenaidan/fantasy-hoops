@@ -310,6 +310,10 @@ function updateStandings_(pointMap) {
     }
   });
 
+  teams.forEach(row => {
+    row.points_today = 0;
+  });
+
   pointMap.forEach((points, team) => {
     if (typeof points !== 'number' || isNaN(points)) return;
     const normalizedTeam = normalizeSchoolName_(team);
@@ -322,6 +326,7 @@ function updateStandings_(pointMap) {
 
     const currentPoints = Number(teams[rowIndex].points) || 0;
     teams[rowIndex].points = currentPoints + points;
+    teams[rowIndex].points_today = (Number(teams[rowIndex].points_today) || 0) + points;
   });
 
   writeTable(SHEET_TEAMS, teams);
