@@ -217,6 +217,11 @@
       });
     }
 
+    function formatColumnName(column) {
+      const label = column.replace(/_/g, ' ');
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
     function renderManagerDropdowns(managerTotals, teams) {
       const dropdownList = document.getElementById('managerDropdowns');
       dropdownList.innerHTML = '';
@@ -268,7 +273,7 @@
           const headerRow = document.createElement('tr');
           columns.forEach(col => {
             const th = document.createElement('th');
-            th.textContent = col.replace(/_/g, ' ');
+            th.textContent = formatColumnName(col);
             headerRow.appendChild(th);
           });
           thead.appendChild(headerRow);
