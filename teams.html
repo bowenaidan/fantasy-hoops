@@ -160,6 +160,10 @@
         font-size: 18px;
       }
 
+      .page {
+        padding: 16px 14px 28px;
+      }
+
       th, td {
         font-size: 13px;
         padding: 8px 10px;
@@ -172,6 +176,59 @@
       .manager-summary {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .teams-table-wrapper {
+        overflow: visible;
+      }
+
+      table {
+        min-width: 0;
+        background: transparent;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      tbody tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px 12px;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+
+      tbody tr td {
+        border: none;
+        padding: 0;
+        font-size: 14px;
+      }
+
+      tbody tr td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        font-weight: 600;
+      }
+
+      tbody tr td:last-child {
+        text-align: right;
+        align-self: center;
+        font-weight: 700;
       }
     }
   </style>
@@ -280,36 +337,35 @@
 
           const tbody = document.createElement('tbody');
           managerTeams.forEach(team => {
-              const row = document.createElement('tr');
-              columns.forEach(col => {
-                const td = document.createElement('td');
-                if (col === 'team') {
-                  const teamName = team[col] ?? '';
-                  const rank = team?.rank;
-                  const opponentName = team?.opponent;
-                  const opponentRank = team?.opponent_rank;
+            const row = document.createElement('tr');
+            columns.forEach(col => {
+              const td = document.createElement('td');
+              td.dataset.label = formatColumnName(col);
+              if (col === 'team') {
+                const teamName = team[col] ?? '';
+                const rank = team?.rank;
+                const opponentName = team?.opponent;
+                const opponentRank = team?.opponent_rank;
 
-                  const teamTitle = document.createElement('strong');
-                  teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
-                  td.appendChild(teamTitle);
+                const teamTitle = document.createElement('strong');
+                teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
+                td.appendChild(teamTitle);
 
-                  const opponentDetails = [
-                    opponentName ? `vs ${opponentName}` : null,
-                    opponentRank ? `(${opponentRank})` : null,
-                  ].filter(Boolean).join(' ');
+                const opponentDetails = [
+                  opponentName ? `vs ${opponentName}` : null,
+                  opponentRank ? `(${opponentRank})` : null,
+                ].filter(Boolean).join(' ');
 
-                  if (opponentDetails) {
-                    const opponentSpan = document.createElement('span');
-                    opponentSpan.textContent = ` ${opponentDetails}`;
-                    td.appendChild(opponentSpan);
-                  }
+                if (opponentDetails) {
+                  const opponentSpan = document.createElement('span');
+                  opponentSpan.textContent = ` ${opponentDetails}`;
+                  td.appendChild(opponentSpan);
                 }
-                else if (col === 'opponent') {
-                  const opponentName = team[col] ?? '';
-                  const opponentRank = team?.opponent_rank;
-                  td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
-              }
-              else if (col === 'points') {
+              } else if (col === 'opponent') {
+                const opponentName = team[col] ?? '';
+                const opponentRank = team?.opponent_rank;
+                td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+              } else if (col === 'points') {
                 const pointsToday = Number(team.points_today) || 0;
                 const potentialPoints = Number(team.potential_points) || 0;
                 const details = [];
