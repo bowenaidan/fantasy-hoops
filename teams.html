@@ -118,6 +118,11 @@
       font-size: 14px;
     }
 
+    .points-today {
+      color: #16a34a;
+      font-weight: 600;
+    }
+
     th {
       background: #e2e8f0;
       font-weight: 600;
@@ -194,7 +199,6 @@
   <script>
     const columns = [
       'team',
-      'potential_points',
       'opponent',
       'points',
     ];
@@ -288,8 +292,15 @@
               else if (col === 'points') {
                 const pointsToday = Number(team.points_today) || 0;
                 const pointsTodayText =
-                  pointsToday > 0 ? ` +${pointsToday}` : pointsToday < 0 ? ` ${pointsToday}` : '';
-                td.textContent = `${team[col] ?? ''}${pointsTodayText}`;
+                    pointsToday > 0 ? `+${pointsToday}` : pointsToday < 0 ? `${pointsToday}` : '';
+                td.textContent = `${team[col] ?? ''}`;
+
+                if (pointsTodayText) {
+                  const pointsTodaySpan = document.createElement('span');
+                  pointsTodaySpan.className = 'points-today';
+                  pointsTodaySpan.textContent = ` ${pointsTodayText}`;
+                  td.appendChild(pointsTodaySpan);
+                }
               } else {
                 td.textContent = team[col] ?? '';
               }
