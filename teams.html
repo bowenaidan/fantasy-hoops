@@ -199,7 +199,6 @@
   <script>
     const columns = [
       'team',
-      'opponent',
       'points',
     ];
 
@@ -282,7 +281,15 @@
               if (col === 'team') {
                 const teamName = team[col] ?? '';
                 const rank = team?.rank;
+                let opponentName = team?.opponent;
+                let opponentRank = team?.opponent_rank;
+                opponentRank = opponentRank ? `(${opponentRank})` : '';
+                opponentName = opponentName ? ` vs ${opponentName} ` : opponentName;
                 td.textContent = rank ? `${teamName} (${rank})` : teamName;
+                
+                const pointsTodaySpan = document.createElement('span');
+                pointsTodaySpan.textContent = ` ${opponentName}`;
+                td.appendChild(pointsTodaySpan);
               } 
               else if (col === 'opponent') {
                 const opponentName = team[col] ?? '';
@@ -291,14 +298,20 @@
               }
               else if (col === 'points') {
                 const pointsToday = Number(team.points_today) || 0;
-                const pointsTodayText =
-                    pointsToday > 0 ? `+${pointsToday}` : pointsToday < 0 ? `${pointsToday}` : '';
-                td.textContent = `${team[col] ?? ''}`;
+                const potentialPoints = Number(team.potential_points) || 0;
+                const details = [];
 
-                if (pointsTodayText) {
+                if (potentialPoints !== 0 && potentialPoints !== pointsToday) {
+                  details.push(`${potentialPoints > 0 ? `(+${potentialPoints})` : potentialPoints}`);
+                }
+
+                const detailText = details.length ? ` ${details.join(', ')}` : '';
+                td.textContent = `${team[col] ?? ''}${detailText}`;
+
+                if (pointsToday) {
                   const pointsTodaySpan = document.createElement('span');
                   pointsTodaySpan.className = 'points-today';
-                  pointsTodaySpan.textContent = ` ${pointsTodayText}`;
+                  pointsTodaySpan.textContent = ` +${pointsToday}`;
                   td.appendChild(pointsTodaySpan);
                 }
               } else {
