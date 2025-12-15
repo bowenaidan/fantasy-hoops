@@ -3,7 +3,7 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.1">
   <title>Fantasy Hoops Teams</title>
   <style>
     body {
@@ -152,6 +152,10 @@
     }
 
     @media (max-width: 640px) {
+      html {
+        font-size: 112.5%;
+      }
+
       h1 {
         font-size: 22px;
       }
@@ -165,6 +169,10 @@
         padding: 8px 10px;
       }
 
+      .page {
+        padding: 16px 12px 24px;
+      }
+
       .manager-card {
         padding: 10px;
       }
@@ -172,6 +180,47 @@
       .manager-summary {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .manager-summary .manager-points {
+        font-size: 16px;
+      }
+
+      .teams-table-wrapper {
+        overflow: visible;
+      }
+
+      .teams-table-wrapper table {
+        min-width: 0;
+      }
+
+      .teams-table-wrapper thead {
+        display: none;
+      }
+
+      .teams-table-wrapper tr {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: white;
+      }
+
+      .teams-table-wrapper td {
+        border: none;
+        padding: 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .teams-table-wrapper td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #475569;
       }
     }
   </style>
@@ -283,6 +332,7 @@
               const row = document.createElement('tr');
               columns.forEach(col => {
                 const td = document.createElement('td');
+                td.setAttribute('data-label', formatColumnName(col));
                 if (col === 'team') {
                   const teamName = team[col] ?? '';
                   const rank = team?.rank;
