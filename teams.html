@@ -118,7 +118,7 @@
       font-size: 14px;
     }
 
-    .points-today {
+    .points-gain {
       color: #16a34a;
       font-weight: 600;
     }
@@ -188,10 +188,10 @@
       Live view of the TEAMS sheet with teams grouped by manager. Expand a manager to view their teams.
     </p>
 
-    <section>
+    <!-- <section>
       <h2>Manager totals</h2>
       <ul id="managerTotals" class="manager-totals"></ul>
-    </section>
+    </section> -->
 
     <section>
       <h2>Teams by manager</h2>
@@ -308,13 +308,11 @@
                     opponentSpan.textContent = ` ${opponentDetails}`;
                     td.appendChild(opponentSpan);
                   }
-                }
-                else if (col === 'opponent') {
+              } else if (col === 'opponent') {
                   const opponentName = team[col] ?? '';
                   const opponentRank = team?.opponent_rank;
                   td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
-              }
-              else if (col === 'points') {
+              } else if (col === 'points') {
                 const pointsToday = Number(team.points_today) || 0;
                 const potentialPoints = Number(team.potential_points) || 0;
                 const details = [];
@@ -369,7 +367,7 @@
     function initialize() {
       google.script.run
         .withSuccessHandler(({ teams, managerTotals }) => {
-          renderManagerTotals(managerTotals);
+          // renderManagerTotals(managerTotals);
           renderManagerDropdowns(managerTotals, teams);
         })
         .withFailureHandler(err => {
