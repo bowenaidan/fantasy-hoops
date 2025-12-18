@@ -182,12 +182,28 @@ function dailySync(isoDate) {
 
     const winnerIsHome = !!game.home?.winner;
     const winnerName = winnerIsHome ? home : away;
+    const loserName = winnerIsHome ? away : home;
     const normalizedWinner = normalizeSchoolName_(winnerName);
-    const rosterName = rosterLookup.get(normalizedWinner);
-    if (!rosterName) return;
+    const normalizedLoser = normalizeSchoolName_(loserName);
+    const winnerRosterName = rosterLookup.get(normalizedWinner);
+    const loserRosterName = rosterLookup.get(normalizedLoser);
+
+    if (!winnerRosterName && !loserRosterName) return;
 
     const gamePoints = calculateGamePoints_(game, winnerIsHome);
-    pointMap.set(rosterName, (pointMap.get(rosterName) || 0) + gamePoints);
+    if (winnerRosterName) {
+      pointMap.set(winnerRosterName, (pointMap.get(winnerRosterName) || 0) + gamePoints);
+    }
+
+    const winnerConference = winnerIsHome
+      ? game.home?.conferences?.[0]?.conferenceSeo
+      : game.away?.conferences?.[0]?.conferenceSeo;
+    const winnerTier = getConferenceTier_(winnerConference);
+    const normalizedWinnerTier = (winnerTier === null || typeof winnerTier === 'undefined') ? -1 : winnerTier;
+
+    if (loserRosterName && normalizedWinnerTier === -1) {
+      pointMap.set(loserRosterName, (pointMap.get(loserRosterName) || 0) - 4);
+    }
 
   });
 
