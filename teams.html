@@ -123,6 +123,11 @@
       font-weight: 600;
     }
 
+    .points-loss {
+      color: #FF0000;
+      font-weight: 600;
+    }
+
     th {
       background: #e2e8f0;
       font-weight: 600;
@@ -322,10 +327,18 @@
                 td.textContent = `${team[col] ?? ''}${detailText}`;
 
                 if (pointsToday) {
+                  if (pointsToday > 0){
                   const pointsTodaySpan = document.createElement('span');
-                  pointsTodaySpan.className = 'points-today';
+                    pointsTodaySpan.className = 'points-gain';
                   pointsTodaySpan.textContent = ` +${pointsToday}`;
                   td.appendChild(pointsTodaySpan);
+                  }
+                  else {
+                    const pointsTodaySpan = document.createElement('span');
+                    pointsTodaySpan.className = 'points-loss';
+                    pointsTodaySpan.textContent = ` ${pointsToday}`;
+                    td.appendChild(pointsTodaySpan);
+                  }
                 }
               } else {
                 td.textContent = team[col] ?? '';
