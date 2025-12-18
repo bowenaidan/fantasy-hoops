@@ -288,7 +288,11 @@
       return label.charAt(0).toUpperCase() + label.slice(1);
     }
 
-    function renderManagerDropdowns(managerTotals, teams) {
+    function renderManagerDropdowns(managerTotals, teams, managerDailyTotal = []) {
+      const dailyByManager = managerDailyTotal.reduce((acc, row) => {
+        acc[row.manager] = row.dailyPoints;
+        return acc;
+      }, {});
       const dropdownList = document.getElementById('managerDropdowns');
       dropdownList.innerHTML = '';
 
@@ -309,6 +313,18 @@
           return (a?.team || '').localeCompare(b?.team || '');
         });
 
+        const daily = dailyByManager[manager] ?? 0;
+
+        let dailyClass = '';
+        let dailyHtml = '';
+
+        if (daily > 0) {
+          dailyClass = 'points-gain';
+          dailyHtml = `<span class="${dailyClass}">+${daily}</span>`;
+        } else if (daily < 0) {
+          dailyClass = 'points-loss';
+          dailyHtml = `<span class="${dailyClass}">${daily}</span>`;
+        }
         const details = document.createElement('details');
         details.className = 'manager-dropdown';
 
@@ -319,7 +335,9 @@
             <p class="manager-name">${manager}</p>
             <span class="summary-hint">Click to view team details</span>
           </div>
-          <span class="manager-points">${totalPoints} pts</span>
+          <span class="manager-points">
+            ${dailyHtml} ${totalPoints + daily} pts
+          </span>
         `;
 
         const teamsContainer = document.createElement('div');
@@ -379,12 +397,18 @@
                 const potentialPoints = Number(team.potential_points) || 0;
                 const details = [];
 
-                if (potentialPoints !== 0 && potentialPoints !== pointsToday) {
-                  details.push(`${potentialPoints > 0 ? `(+${potentialPoints})` : potentialPoints}`);
-                }
+                // if (potentialPoints !== 0 && potentialPoints !== pointsToday) {
+                //   details.push(`${potentialPoints > 0 ? `(+${potentialPoints})` : potentialPoints}`);
+                // }
 
                 const detailText = details.length ? ` ${details.join(', ')}` : '';
-                td.textContent = `${team[col] ?? ''}${detailText}`;
+                td.textContent = `${team[col] + pointsToday ?? ''}`;
+
+                if((potentialPoints !== 0) && (potentialPoints !== pointsToday)) {
+                  const pointsTodaySpan = document.createElement('span');
+                  pointsTodaySpan.textContent = ` (+${potentialPoints})`;
+                  td.appendChild(pointsTodaySpan);
+                }
 
                 if (pointsToday) {
                   if (pointsToday > 0){
@@ -428,9 +452,9 @@
 
     function initialize() {
       google.script.run
-        .withSuccessHandler(({ teams, managerTotals }) => {
+        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal }) => {
           // renderManagerTotals(managerTotals);
-          renderManagerDropdowns(managerTotals, teams);
+          renderManagerDropdowns(managerTotals, teams, managerDailyTotal);
         })
         .withFailureHandler(err => {
           const message = err && err.message ? err.message : 'Unable to load teams data.';
