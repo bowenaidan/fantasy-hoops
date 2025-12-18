@@ -285,33 +285,34 @@
 
           const tbody = document.createElement('tbody');
           managerTeams.forEach(team => {
-              const row = document.createElement('tr');
-              columns.forEach(col => {
-                const td = document.createElement('td');
-                if (col === 'team') {
-                  const teamName = team[col] ?? '';
-                  const rank = team?.rank;
-                  const opponentName = team?.opponent;
-                  const opponentRank = team?.opponent_rank;
+            const row = document.createElement('tr');
+            columns.forEach(col => {
+              const td = document.createElement('td');
+              td.dataset.label = formatColumnName(col);
+              if (col === 'team') {
+                const teamName = team[col] ?? '';
+                const rank = team?.rank;
+                const opponentName = team?.opponent;
+                const opponentRank = team?.opponent_rank;
 
-                  const teamTitle = document.createElement('strong');
-                  teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
-                  td.appendChild(teamTitle);
+                const teamTitle = document.createElement('strong');
+                teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
+                td.appendChild(teamTitle);
 
-                  const opponentDetails = [
-                    opponentName ? `vs ${opponentName}` : null,
-                    opponentRank ? `(${opponentRank})` : null,
-                  ].filter(Boolean).join(' ');
+                const opponentDetails = [
+                  opponentName ? `vs ${opponentName}` : null,
+                  opponentRank ? `(${opponentRank})` : null,
+                ].filter(Boolean).join(' ');
 
-                  if (opponentDetails) {
-                    const opponentSpan = document.createElement('span');
-                    opponentSpan.textContent = ` ${opponentDetails}`;
-                    td.appendChild(opponentSpan);
-                  }
+                if (opponentDetails) {
+                  const opponentSpan = document.createElement('span');
+                  opponentSpan.textContent = ` ${opponentDetails}`;
+                  td.appendChild(opponentSpan);
+                }
               } else if (col === 'opponent') {
-                  const opponentName = team[col] ?? '';
-                  const opponentRank = team?.opponent_rank;
-                  td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+                const opponentName = team[col] ?? '';
+                const opponentRank = team?.opponent_rank;
+                td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
               } else if (col === 'points') {
                 const pointsToday = Number(team.points_today) || 0;
                 const potentialPoints = Number(team.potential_points) || 0;
@@ -326,10 +327,10 @@
 
                 if (pointsToday) {
                   if (pointsToday > 0){
-                  const pointsTodaySpan = document.createElement('span');
+                    const pointsTodaySpan = document.createElement('span');
                     pointsTodaySpan.className = 'points-gain';
-                  pointsTodaySpan.textContent = ` +${pointsToday}`;
-                  td.appendChild(pointsTodaySpan);
+                    pointsTodaySpan.textContent = ` +${pointsToday}`;
+                    td.appendChild(pointsTodaySpan);
                   }
                   else {
                     const pointsTodaySpan = document.createElement('span');
