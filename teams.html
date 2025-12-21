@@ -330,20 +330,13 @@
 </head>
 <body>
   <div class="page">
-    <h1>Teams</h1>
-    <p class="description">
-      Live view of the TEAMS sheet with teams grouped by manager. Expand a manager to view their teams.
-    </p>
+    <h1>Fantasy Hoops</h1>
 
     <div class="tabs" role="tablist">
       <button class="tab-button active" data-tab="manager" role="tab" aria-selected="true">By manager</button>
       <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Search teams</button>
+      <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Live Scores</button>
     </div>
-
-    <!-- <section>
-      <h2>Manager totals</h2>
-      <ul id="managerTotals" class="manager-totals"></ul>
-    </section> -->
 
     <section id="managerTab" class="tab-panel active" aria-label="Teams by manager">
       <h2>Teams by manager</h2>
@@ -354,9 +347,13 @@
       <h2>Search by team</h2>
       <div class="search-bar">
         <input id="teamSearch" class="search-input" type="search" placeholder="Start typing a team name" aria-label="Search teams" />
-        <span class="search-hint">Ordered by total points (high to low)</span>
       </div>
       <div id="searchResults" class="search-results"></div>
+    </section>
+
+    <section id="scoresTab" class="tab-panel" aria-label="Lives Scores">
+      <h2></h2>
+      <h3>Coming soon...</h3>
     </section>
 
     <div id="error" class="error" style="display:none;"></div>
@@ -371,7 +368,6 @@
     const searchColumns = [
       'team',
       'points',
-      'opponent',
     ];
 
     let allTeams = [];
@@ -402,10 +398,25 @@
       return rank ? `${teamName} (${rank})` : teamName;
     }
 
+    function getOpponentPrefix(team) {
+      const homeFlag = team?.home_game;
+      const isHomeGame = homeFlag === true || homeFlag === 'TRUE' || homeFlag === 'true';
+      const isAwayGame = homeFlag === false || homeFlag === 'FALSE' || homeFlag === 'false';
+
+      if (isHomeGame) return 'vs';
+      if (isAwayGame) return '@';
+      return '';
+    }
+
     function formatOpponentLabel(team) {
       const opponentName = team?.opponent ?? '';
       const opponentRank = team?.opponent_rank;
-      return opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+      const prefix = getOpponentPrefix(team);
+
+      if (!opponentName) return '';
+
+      const label = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+      return prefix ? `${prefix} ${label}` : label;
     }
 
     function getTotalPoints(team) {
@@ -499,13 +510,14 @@
                 const rank = team?.rank;
                 const opponentName = team?.opponent;
                 const opponentRank = team?.opponent_rank;
+                const opponentPrefix = getOpponentPrefix(team);
 
                 const teamTitle = document.createElement('strong');
                 teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
                 td.appendChild(teamTitle);
 
                 const opponentDetails = [
-                  opponentName ? `vs ${opponentName}` : null,
+                  opponentName ? `${opponentPrefix || ''}${opponentPrefix ? ' ' : ''}${opponentName}` : null,
                   opponentRank ? `(${opponentRank})` : null,
                 ].filter(Boolean).join(' ');
 
@@ -617,6 +629,12 @@
             const teamLabel = document.createElement('strong');
             teamLabel.textContent = formatTeamLabel(team);
             td.appendChild(teamLabel);
+
+            if (team?.opponent) {
+              const opponentLabel = document.createElement('span');
+              opponentLabel.textContent = team.home_game ? ` vs ${team.opponent}` : ` @ ${team.opponent}`;
+              td.appendChild(opponentLabel);
+            }
 
             if (team?.manager) {
               const managerLabel = document.createElement('span');

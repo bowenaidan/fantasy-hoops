@@ -16,7 +16,7 @@ function updateOpponentCellsForDate(isoDate) {
     Logger.log(err);
     return;
   }
-  settleScores(teams);
+  // settleScores(teams);
 
   if (!Array.isArray(teams) || teams.length === 0) {
     Logger.log('No teams found in standings sheet.');
@@ -93,19 +93,21 @@ function resetOpponentData_(teams, normalizedIndex) {
       row.opponent = '';
       row.opponent_rank = '';
       row.opponent_conference = '';
+      row.home_game = '';
       row.potential_points = 0;
     }
   });
 }
 
-function applyOpponentData_(row, game, { opponentName, opponentRank, opponentConference }, winnerIsHome) {
+function applyOpponentData_(row, game, { opponentName, opponentRank, opponentConference }, teamIsHome) {
   if (!row) return;
   row.opponent = opponentName || '';
   row.opponent_rank = opponentRank || '';
   row.opponent_conference = opponentConference || '';
+  row.home_game = typeof teamIsHome === 'boolean' ? teamIsHome : '';
 
   if (typeof calculateGamePoints_ === 'function') {
-    const potentialPoints = calculateGamePoints_(game, winnerIsHome);
+    const potentialPoints = calculateGamePoints_(game, teamIsHome);
     if (typeof potentialPoints === 'number' && !isNaN(potentialPoints)) {
       row.potential_points = potentialPoints;
     }
