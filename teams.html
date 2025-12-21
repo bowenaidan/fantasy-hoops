@@ -232,6 +232,13 @@
       font-weight: 600;
     }
 
+    .team-manager {
+      display: block;
+      color: #475569;
+      font-size: 1.05rem;
+      margin-top: 2px;
+    }
+
     .error {
       color: #b91c1c;
       background: #fee2e2;
@@ -364,7 +371,6 @@
     const searchColumns = [
       'team',
       'points',
-      'manager',
       'opponent',
     ];
 
@@ -611,6 +617,13 @@
             const teamLabel = document.createElement('strong');
             teamLabel.textContent = formatTeamLabel(team);
             td.appendChild(teamLabel);
+
+            if (team?.manager) {
+              const managerLabel = document.createElement('span');
+              managerLabel.className = 'team-manager';
+              managerLabel.textContent = team.manager;
+              td.appendChild(managerLabel);
+            }
           } else if (col === 'points') {
             td.textContent = getTotalPoints(team);
           } else if (col === 'opponent') {
