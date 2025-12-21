@@ -6,56 +6,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fantasy Hoops Teams</title>
   <style>
+    :root {
+      color-scheme: light dark;
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-end: #1e293b;
+      --card-bg: rgba(15, 23, 42, 0.82);
+      --card-border: rgba(148, 163, 184, 0.35);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --table-header-bg: rgba(56, 189, 248, 0.12);
+      --table-row-hover: rgba(56, 189, 248, 0.08);
+      --table-border: rgba(148, 163, 184, 0.25);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-gradient-start: #f8fafc;
+        --bg-gradient-end: #e2e8f0;
+        --card-bg: rgba(255, 255, 255, 0.94);
+        --card-border: rgba(15, 23, 42, 0.08);
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --accent: #0284c7;
+        --accent-soft: rgba(2, 132, 199, 0.12);
+        --table-header-bg: rgba(2, 132, 199, 0.08);
+        --table-row-hover: rgba(2, 132, 199, 0.06);
+        --table-border: rgba(15, 23, 42, 0.08);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      color: #0f172a;
-      background: #f8fafc;
-      font-size: 16px;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      color: var(--text-primary);
+      padding: 48px 24px;
       line-height: 1.6;
     }
 
     .page {
-      margin: 0 auto;
-      padding: 20px 16px 40px;
-      max-width: 960px;
+      width: min(1200px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
 
     h1 {
-      margin-bottom: 8px;
-      font-size: 28px;
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+      letter-spacing: -0.01em;
     }
 
     .description {
-      margin-top: 0;
-      color: #475569;
-      font-size: 16px;
+      margin: 4px 0 0;
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+      backdrop-filter: blur(10px);
     }
 
     .tabs {
       display: flex;
-      border-bottom: 1px solid #e2e8f0;
-      margin: 20px 0 12px;
-      gap: 8px;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .tab-list {
+      display: inline-flex;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 6px;
+      gap: 6px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
     }
 
     .tab-button {
-      border: 1px solid #e2e8f0;
-      border-bottom: none;
-      background: #e2e8f0;
-      color: #0f172a;
-      padding: 10px 14px;
-      border-radius: 8px 8px 0 0;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
       cursor: pointer;
-      font-weight: 600;
-      transition: background 0.15s ease, color 0.15s ease;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      font-size: 1rem;
+    }
+
+    .tab-button:hover,
+    .tab-button:focus-visible {
+      background: var(--accent-soft);
+      color: var(--accent);
+      outline: none;
+      transform: translateY(-1px);
     }
 
     .tab-button.active {
-      background: white;
-      color: #0f172a;
-      border-color: #cbd5e1;
-      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+      background: var(--accent);
+      color: #0b1224;
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.35);
     }
 
     .tab-panel {
@@ -66,63 +140,60 @@
       display: block;
     }
 
-    .manager-totals {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin: 16px 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .manager-card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 12px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-    }
-
-    .manager-name {
-      margin: 0 0 6px;
-      font-weight: 600;
+    .panel-card {
+      margin-top: 12px;
     }
 
     .dropdown-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
       margin-top: 16px;
     }
 
     .search-bar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       margin: 16px 0 12px;
       flex-wrap: wrap;
+      color: var(--text-secondary);
     }
 
     .search-input {
-      flex: 1 1 260px;
-      padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 16px;
-      background: white;
+      flex: 1 1 300px;
+      padding: 12px 14px;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      background: rgba(148, 163, 184, 0.08);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .search-input:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: rgba(56, 189, 248, 0.12);
     }
 
     .search-hint {
-      color: #475569;
-      font-size: 15px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
     }
 
     details.manager-dropdown {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      background: rgba(15, 23, 42, 0.2);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
       overflow: hidden;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.25);
     }
 
     .manager-summary {
@@ -130,81 +201,106 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 16px 18px;
+      padding: 18px 20px;
       cursor: pointer;
       list-style: none;
+      background: var(--card-bg);
     }
 
     .summary-title {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
 
     .summary-title .manager-name {
       margin: 0;
-      font-size: 18px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+    }
+
+    .manager-name button,
+    .manager-name strong {
+      font: inherit;
     }
 
     .manager-points {
-      font-weight: 600;
-      color: #0f172a;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      font-size: 1.1rem;
+      white-space: nowrap;
     }
 
     .summary-hint {
-      font-size: 14px;
-      color: #475569;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
 
     .manager-teams {
-      border-top: 1px solid #e2e8f0;
-      padding: 14px 16px 16px;
-      background: #f8fafc;
+      border-top: 1px solid var(--card-border);
+      padding: 16px 16px 18px;
+      background: rgba(148, 163, 184, 0.08);
     }
 
     .teams-table-wrapper {
       overflow-x: auto;
       width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--table-border);
+      background: rgba(15, 23, 42, 0.2);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 320px;
     }
 
     th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--table-border);
       text-align: left;
-      font-size: 16px;
+      font-size: 0.98rem;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    th {
+      background: var(--table-header-bg);
+      font-weight: 700;
+      color: var(--text-secondary);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    tbody tr:hover {
+      background: var(--table-row-hover);
     }
 
     .points-gain {
       color: #16a34a;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .points-loss {
-      color: #FF0000;
-      font-weight: 600;
-    }
-
-    th {
-      background: #e2e8f0;
-      font-weight: 600;
-      color: #0f172a;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #fff;
+      color: #ef4444;
+      font-weight: 700;
     }
 
     .empty-state {
-      color: #475569;
-      font-size: 15px;
+      color: var(--text-secondary);
+      font-size: 0.98rem;
       margin: 6px 0 0;
     }
 
@@ -214,52 +310,38 @@
 
     .pill {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-radius: 999px;
-      background: #e2e8f0;
-      color: #0f172a;
-      font-size: 14px;
-      font-weight: 600;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .error {
       color: #b91c1c;
       background: #fee2e2;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border: 1px solid #fecdd3;
-      border-radius: 4px;
+      border-radius: 8px;
       margin-top: 12px;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       body {
-        font-size: 18px;
+        padding: 32px 16px;
       }
 
-      h1 {
-        font-size: 24px;
-      }
-
-      h2 {
-        font-size: 20px;
-      }
-
-      .page {
-        padding: 18px 14px 36px;
-      }
-
-      .manager-card {
-        padding: 12px;
+      .card,
+      details.manager-dropdown {
+        border-radius: 18px;
       }
 
       .manager-summary {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
-      }
-
-      .manager-teams {
-        padding: 12px 12px 14px;
+        gap: 10px;
       }
 
       table,
@@ -277,17 +359,17 @@
 
       tr {
         margin-bottom: 12px;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
       }
 
       td {
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--card-border);
         position: relative;
         padding: 12px 12px 12px 44%;
-        font-size: 17px;
+        font-size: 1rem;
       }
 
       td:last-child {
@@ -299,28 +381,33 @@
         position: absolute;
         left: 12px;
         top: 12px;
-        font-weight: 600;
-        color: #475569;
-        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
         text-transform: capitalize;
       }
 
       .teams-table-wrapper {
         overflow: visible;
+        border: none;
+        background: transparent;
       }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <h1>Teams</h1>
-    <p class="description">
-      Live view of the TEAMS sheet with teams grouped by manager. Expand a manager to view their teams.
-    </p>
-
-    <div class="tabs" role="tablist">
-      <button class="tab-button active" data-tab="manager" role="tab" aria-selected="true">By manager</button>
-      <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Search teams</button>
+    <div class="card">
+      <h1>Teams</h1>
+      <p class="description">
+        Live view of the TEAMS sheet with teams grouped by manager. Expand a manager to view their teams.
+      </p>
+      <div class="tabs" role="tablist">
+        <div class="tab-list">
+          <button class="tab-button active" data-tab="manager" role="tab" aria-selected="true">By manager</button>
+          <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Search teams</button>
+        </div>
+      </div>
     </div>
 
     <!-- <section>
@@ -329,17 +416,21 @@
     </section> -->
 
     <section id="managerTab" class="tab-panel active" aria-label="Teams by manager">
-      <h2>Teams by manager</h2>
-      <div id="managerDropdowns" class="dropdown-list"></div>
+      <div class="card panel-card">
+        <h2>Teams by manager</h2>
+        <div id="managerDropdowns" class="dropdown-list"></div>
+      </div>
     </section>
 
     <section id="searchTab" class="tab-panel" aria-label="Search teams">
-      <h2>Search by team</h2>
-      <div class="search-bar">
-        <input id="teamSearch" class="search-input" type="search" placeholder="Start typing a team name" aria-label="Search teams" />
-        <span class="search-hint">Ordered by total points (high to low)</span>
+      <div class="card panel-card">
+        <h2>Search by team</h2>
+        <div class="search-bar">
+          <input id="teamSearch" class="search-input" type="search" placeholder="Start typing a team name" aria-label="Search teams" />
+          <span class="search-hint">Ordered by total points (high to low)</span>
+        </div>
+        <div id="searchResults" class="search-results"></div>
       </div>
-      <div id="searchResults" class="search-results"></div>
     </section>
 
     <div id="error" class="error" style="display:none;"></div>
