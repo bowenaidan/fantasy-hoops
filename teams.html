@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fantasy Hoops Teams</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      color: #0f172a;
+      background: #f8fafc;
+      font-size: 22.48px;
+      line-height: 1.6;
+    }
+
+    .page {
+      margin: 0 auto;
+      padding: 28px 18px 44px;
+      max-width: 1100px;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: clamp(2.645rem, 3.97vw, 3.70rem);
+      letter-spacing: -0.01em;
+      font-weight: 700;
+    }
+
+    h2 {
+      margin: 12px 0 10px;
+      font-size: clamp(1.78rem, 3.17vw, 2.32rem);
+      letter-spacing: -0.01em;
+    }
+
+    .description {
+      margin-top: 0;
+      color: #475569;
+      font-size: 1.32rem;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e2e8f0;
+      margin: 20px 0 12px;
+      gap: 8px;
+    }
+
+    .tab-button {
+      border: 1px solid #e2e8f0;
+      border-bottom: none;
+      background: #e2e8f0;
+      color: #0f172a;
+      padding: 10px 14px;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.32rem;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .tab-button.active {
+      background: white;
+      color: #0f172a;
+      border-color: #cbd5e1;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .manager-totals {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .manager-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .manager-name {
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+
+    .dropdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1 1 260px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 21.16px;
+      background: white;
+    }
+
+    .search-hint {
+      color: #475569;
+      font-size: 19.84px;
+    }
+
+    details.manager-dropdown {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .manager-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .summary-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-title .manager-name {
+      margin: 0;
+      font-size: 1.39rem;
+    }
+
+    .manager-points {
+      font-weight: 600;
+      font-size: 1.39rem;
+      color: #0f172a;
+    }
+
+    .summary-hint {
+      font-size: 1.25rem;
+      color: #475569;
+    }
+
+    .manager-teams {
+      border-top: 1px solid #e2e8f0;
+      padding: 14px 16px 16px;
+      background: #f8fafc;
+    }
+
+    .teams-table-wrapper {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 1.30rem;
+    }
+
+    .points-gain {
+      color: #16a34a;
+      font-weight: 600;
+    }
+
+    .points-loss {
+      color: #FF0000;
+      font-weight: 600;
+    }
+
+    th {
+      background: #e2e8f0;
+      font-weight: 600;
+      color: #0f172a;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fff;
+    }
+
+    .empty-state {
+      color: #475569;
+      font-size: 1.27rem;
+      margin: 6px 0 0;
+    }
+
+    .search-results table {
+      min-width: 0;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-size: 1.20rem;
+      font-weight: 600;
+    }
+
+    .team-manager {
+      display: block;
+      color: #475569;
+      font-size: 1.05rem;
+      margin-top: 2px;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 8px 12px;
+      border: 1px solid #fecdd3;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        font-size: 22.48px;
+      }
+
+      h1 {
+        font-size: 2.65rem;
+      }
+
+      h2 {
+        font-size: 1.78rem;
+      }
+
+      .page {
+        padding: 20px 14px 36px;
+      }
+
+      .manager-card {
+        padding: 12px;
+      }
+
+      .manager-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .manager-teams {
+        padding: 12px 12px 14px;
+      }
+
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 12px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      td {
+        border-bottom: 1px solid #e2e8f0;
+        position: relative;
+        padding: 12px 12px 12px 44%;
+        font-size: 22.48px;
+      }
+
+      td:last-child {
+        border-bottom: none;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        font-weight: 600;
+        color: #475569;
+        font-size: 19.84px;
+        text-transform: capitalize;
+      }
+
+      .teams-table-wrapper {
+        overflow: visible;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Fantasy Hoops</h1>
+
+    <div class="tabs" role="tablist">
+      <button class="tab-button active" data-tab="manager" role="tab" aria-selected="true">By manager</button>
+      <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Search teams</button>
+      <button class="tab-button" data-tab="scores" role="tab" aria-selected="false">Live Scores</button>
+    </div>
+
+    <section id="managerTab" class="tab-panel active" aria-label="Teams by manager">
+      <h2>Teams by manager</h2>
+      <div id="managerDropdowns" class="dropdown-list"></div>
+    </section>
+
+    <section id="searchTab" class="tab-panel" aria-label="Search teams">
+      <h2>Search by team</h2>
+      <div class="search-bar">
+        <input id="teamSearch" class="search-input" type="search" placeholder="Start typing a team name" aria-label="Search teams" />
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </section>
+
+    <section id="scoresTab" class="tab-panel" aria-label="Lives Scores">
+      <h2></h2>
+      <h3>Coming soon...</h3>
+    </section>
+
+    <div id="error" class="error" style="display:none;"></div>
+  </div>
+
+  <script>
+    const columns = [
+      'team',
+      'points',
+    ];
+
+    const searchColumns = [
+      'team',
+      'points',
+    ];
+
+    let allTeams = [];
+
+    function renderManagerTotals(managerTotals) {
+      const list = document.getElementById('managerTotals');
+      list.innerHTML = '';
+
+      managerTotals.forEach(({ manager, totalPoints }) => {
+        const item = document.createElement('li');
+        item.className = 'manager-card';
+        item.innerHTML = `
+          <p class="manager-name">${manager}</p>
+          <div><strong>Total Points:</strong> ${totalPoints}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function formatColumnName(column) {
+      const label = column.replace(/_/g, ' ');
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    function formatTeamLabel(team) {
+      const teamName = team?.team ?? '';
+      const rank = team?.rank;
+      return rank ? `${teamName} (${rank})` : teamName;
+    }
+
+    function getOpponentPrefix(team) {
+      const homeFlag = team?.home_game;
+      const isHomeGame = homeFlag === true || homeFlag === 'TRUE' || homeFlag === 'true';
+      const isAwayGame = homeFlag === false || homeFlag === 'FALSE' || homeFlag === 'false';
+
+      if (isHomeGame) return 'vs';
+      if (isAwayGame) return '@';
+      return '';
+    }
+
+    function formatOpponentLabel(team) {
+      const opponentName = team?.opponent ?? '';
+      const opponentRank = team?.opponent_rank;
+      const prefix = getOpponentPrefix(team);
+
+      if (!opponentName) return '';
+
+      const label = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+      return prefix ? `${prefix} ${label}` : label;
+    }
+
+    function getTotalPoints(team) {
+      const base = Number(team?.points) || 0;
+      const today = Number(team?.points_today) || 0;
+      return base + today;
+    }
+
+    function renderManagerDropdowns(managerTotals, teams, managerDailyTotal = []) {
+      const dailyByManager = managerDailyTotal.reduce((acc, row) => {
+        acc[row.manager] = row.dailyPoints;
+        return acc;
+      }, {});
+      const dropdownList = document.getElementById('managerDropdowns');
+      dropdownList.innerHTML = '';
+
+      const teamsByManager = teams.reduce((acc, team) => {
+        const manager = team?.manager || 'Unassigned';
+        if (!acc.has(manager)) {
+          acc.set(manager, []);
+        }
+        acc.get(manager).push(team);
+        return acc;
+      }, new Map());
+
+      managerTotals.forEach(({ manager, totalPoints }) => {
+        const managerTeams = (teamsByManager.get(manager) || []).sort((a, b) => {
+          const pointsA = Number(a?.points) || 0;
+          const pointsB = Number(b?.points) || 0;
+          if (pointsB !== pointsA) return pointsB - pointsA;
+          return (a?.team || '').localeCompare(b?.team || '');
+        });
+
+        const daily = dailyByManager[manager] ?? 0;
+
+        let dailyClass = '';
+        let dailyHtml = '';
+
+        if (daily > 0) {
+          dailyClass = 'points-gain';
+          dailyHtml = `<span class="${dailyClass}">+${daily}</span>`;
+        } else if (daily < 0) {
+          dailyClass = 'points-loss';
+          dailyHtml = `<span class="${dailyClass}">${daily}</span>`;
+        }
+        const details = document.createElement('details');
+        details.className = 'manager-dropdown';
+
+        const summary = document.createElement('summary');
+        summary.className = 'manager-summary';
+        summary.innerHTML = `
+          <div class="summary-title">
+            <p class="manager-name">${manager}</p>
+            <span class="summary-hint">Click to view team details</span>
+          </div>
+          <span class="manager-points">
+            ${dailyHtml} ${totalPoints + daily} pts
+          </span>
+        `;
+
+        const teamsContainer = document.createElement('div');
+        teamsContainer.className = 'manager-teams';
+
+        if (!managerTeams.length) {
+          const empty = document.createElement('p');
+          empty.className = 'empty-state';
+          empty.textContent = 'No teams assigned to this manager.';
+          teamsContainer.appendChild(empty);
+        } else {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'teams-table-wrapper';
+
+          const table = document.createElement('table');
+          const thead = document.createElement('thead');
+          const headerRow = document.createElement('tr');
+          columns.forEach(col => {
+            const th = document.createElement('th');
+            th.textContent = formatColumnName(col);
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+
+          const tbody = document.createElement('tbody');
+          managerTeams.forEach(team => {
+            const row = document.createElement('tr');
+            columns.forEach(col => {
+              const td = document.createElement('td');
+              td.dataset.label = formatColumnName(col);
+              if (col === 'team') {
+                const teamName = team[col] ?? '';
+                const rank = team?.rank;
+                const opponentName = team?.opponent;
+                const opponentRank = team?.opponent_rank;
+                const opponentPrefix = getOpponentPrefix(team);
+
+                const teamTitle = document.createElement('strong');
+                teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
+                td.appendChild(teamTitle);
+
+                const opponentDetails = [
+                  opponentName ? `${opponentPrefix || ''}${opponentPrefix ? ' ' : ''}${opponentName}` : null,
+                  opponentRank ? `(${opponentRank})` : null,
+                ].filter(Boolean).join(' ');
+
+                if (opponentDetails) {
+                  const opponentSpan = document.createElement('span');
+                  opponentSpan.textContent = ` ${opponentDetails}`;
+                  td.appendChild(opponentSpan);
+                }
+              } else if (col === 'opponent') {
+                const opponentName = team[col] ?? '';
+                const opponentRank = team?.opponent_rank;
+                td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+              } else if (col === 'points') {
+                const pointsToday = Number(team.points_today) || 0;
+                const potentialPoints = Number(team.potential_points) || 0;
+                const details = [];
+
+                // if (potentialPoints !== 0 && potentialPoints !== pointsToday) {
+                //   details.push(`${potentialPoints > 0 ? `(+${potentialPoints})` : potentialPoints}`);
+                // }
+
+                const detailText = details.length ? ` ${details.join(', ')}` : '';
+                td.textContent = `${team[col] + pointsToday ?? ''}`;
+
+                if((potentialPoints !== 0) && (potentialPoints !== pointsToday)) {
+                  const pointsTodaySpan = document.createElement('span');
+                  pointsTodaySpan.textContent = ` (+${potentialPoints})`;
+                  td.appendChild(pointsTodaySpan);
+                }
+
+                if (pointsToday) {
+                  if (pointsToday > 0){
+                    const pointsTodaySpan = document.createElement('span');
+                    pointsTodaySpan.className = 'points-gain';
+                    pointsTodaySpan.textContent = ` +${pointsToday}`;
+                    td.appendChild(pointsTodaySpan);
+                  }
+                  else {
+                    const pointsTodaySpan = document.createElement('span');
+                    pointsTodaySpan.className = 'points-loss';
+                    pointsTodaySpan.textContent = ` ${pointsToday}`;
+                    td.appendChild(pointsTodaySpan);
+                  }
+                }
+              } else {
+                td.textContent = team[col] ?? '';
+              }
+              row.appendChild(td);
+            });
+            tbody.appendChild(row);
+          });
+
+          table.appendChild(thead);
+          table.appendChild(tbody);
+          wrapper.appendChild(table);
+          teamsContainer.appendChild(wrapper);
+        }
+
+        details.appendChild(summary);
+        details.appendChild(teamsContainer);
+        dropdownList.appendChild(details);
+      });
+    }
+
+    function renderTeamSearch(teams, filter = '') {
+      const query = filter.trim().toLowerCase();
+      const results = document.getElementById('searchResults');
+      results.innerHTML = '';
+
+      const filteredTeams = teams
+        .filter(team => {
+          if (!query) return true;
+          const name = String(team?.team || '').toLowerCase();
+          return name.includes(query);
+        })
+        .sort((a, b) => {
+          const totalA = getTotalPoints(a);
+          const totalB = getTotalPoints(b);
+          if (totalB !== totalA) return totalB - totalA;
+          return formatTeamLabel(a).localeCompare(formatTeamLabel(b));
+        });
+
+      if (!filteredTeams.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = 'No teams match your search.';
+        results.appendChild(empty);
+        return;
+      }
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      searchColumns.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = formatColumnName(col);
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+
+      const tbody = document.createElement('tbody');
+      filteredTeams.forEach(team => {
+        const row = document.createElement('tr');
+        searchColumns.forEach(col => {
+          const td = document.createElement('td');
+          td.dataset.label = formatColumnName(col);
+
+          if (col === 'team') {
+            const teamLabel = document.createElement('strong');
+            teamLabel.textContent = formatTeamLabel(team);
+            td.appendChild(teamLabel);
+
+            if (team?.opponent) {
+              const opponentLabel = document.createElement('span');
+              opponentLabel.textContent = team.home_game ? ` vs ${team.opponent}` : ` @ ${team.opponent}`;
+              td.appendChild(opponentLabel);
+            }
+
+            if (team?.manager) {
+              const managerLabel = document.createElement('span');
+              managerLabel.className = 'team-manager';
+              managerLabel.textContent = team.manager;
+              td.appendChild(managerLabel);
+            }
+          } else if (col === 'points') {
+            td.textContent = getTotalPoints(team);
+          } else if (col === 'opponent') {
+            td.textContent = formatOpponentLabel(team);
+          } else {
+            td.textContent = team[col] ?? '';
+          }
+
+          row.appendChild(td);
+        });
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      results.appendChild(table);
+    }
+
+    function setupTabs() {
+      const buttons = Array.from(document.querySelectorAll('.tab-button'));
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          const target = button.dataset.tab;
+          buttons.forEach(b => {
+            const isActive = b.dataset.tab === target;
+            b.classList.toggle('active', isActive);
+            b.setAttribute('aria-selected', isActive);
+          });
+
+          document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.id === `${target}Tab`);
+          });
+        });
+      });
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+    }
+
+    function initialize() {
+      setupTabs();
+
+      google.script.run
+        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal }) => {
+          allTeams = teams || [];
+          // renderManagerTotals(managerTotals);
+          renderManagerDropdowns(managerTotals, teams, managerDailyTotal);
+          renderTeamSearch(allTeams);
+
+          const searchInput = document.getElementById('teamSearch');
+          searchInput.addEventListener('input', (event) => {
+            renderTeamSearch(allTeams, event.target.value || '');
+          });
+        })
+        .withFailureHandler(err => {
+          const message = err && err.message ? err.message : 'Unable to load teams data.';
+          showError(message);
+        })
+        .getTeamsPageData();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

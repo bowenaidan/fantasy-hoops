@@ -9,93 +9,109 @@ function updateOpponentCellsForDate(isoDate) {
     return;
   }
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) {
-    Logger.log('No active spreadsheet.');
+  let teams;
+  try {
+    teams = readTable(SHEET_TEAMS);
+  } catch (err) {
+    Logger.log(err);
+    return;
+  }
+  // settleScores(teams);
+
+  if (!Array.isArray(teams) || teams.length === 0) {
+    Logger.log('No teams found in standings sheet.');
     return;
   }
 
-  const sheet = ss.getSheetByName(SHEET_STANDINGS);
-  if (!sheet) {
-    Logger.log(`Sheet not found: ${SHEET_STANDINGS}`);
-    return;
-  }
+  const normalizedIndex = new Map();
+  teams.forEach((row, idx) => {
+    const normalizedTeam = normalizeSchoolName_(row.team);
+    if (normalizedTeam) {
+      normalizedIndex.set(normalizedTeam, idx);
+    }
+  });
 
-  const rosterSet = new Set(ROSTER.map(name => normalizeSchoolName_(name)));
-  const indexByTeam = buildOpponentColumnIndex_(sheet, rosterSet);
-  if (indexByTeam.size === 0) {
-    Logger.log('No roster teams found in standings sheet.');
-    return;
-  }
-
-  clearOpponentCells_(sheet, indexByTeam);
+  resetOpponentData_(teams, normalizedIndex);
 
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
   if (!dayGames || !Array.isArray(dayGames.games) || dayGames.games.length === 0) {
     Logger.log(`No games returned for ${isoDate}.`);
+    writeTable(TABLE_TEAMS, teams);
     return;
   }
 
-  const opponentMap = collectOpponentLabels_(dayGames.games, rosterSet);
-  if (opponentMap.size === 0) {
-    Logger.log(`No opponents found for roster on ${isoDate}.`);
-    return;
-  }
-
-  opponentMap.forEach((label, team) => {
-    const entry = indexByTeam.get(team);
-    if (!entry) return;
-    sheet.getRange(entry.row, entry.opponentCol).setValue(label);
-  });
-}
-
-function buildOpponentColumnIndex_(sheet, rosterSet) {
-  const index = new Map();
-  const lastRow = sheet.getLastRow();
-  const lastCol = sheet.getLastColumn();
-  if (lastRow === 0 || lastCol === 0) return index;
-
-  const values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-  values.forEach((row, rowIdx) => {
-    row.forEach((cell, colIdx) => {
-      if (colIdx >= row.length - 1) return; // ensure there is a points column
-      if (typeof cell !== 'string') return;
-      const team = normalizeSchoolName_(cell);
-      if (!team || !rosterSet.has(team)) return;
-      index.set(team, { row: rowIdx + 1, opponentCol: colIdx + 3 });
-    });
-  });
-  return index;
-}
-
-function clearOpponentCells_(sheet, teamIndex) {
-  teamIndex.forEach(entry => {
-    sheet.getRange(entry.row, entry.opponentCol).clearContent();
-  });
-}
-
-function collectOpponentLabels_(games, rosterSet) {
-  const opponents = new Map();
-  games.forEach(wrapper => {
+  dayGames.games.forEach(wrapper => {
     const game = wrapper.game || wrapper;
     if (!game || !game.home || !game.away) return;
+
     const homeShort = (game.home.names && game.home.names.short) || game.home.alias || game.home.name;
     const awayShort = (game.away.names && game.away.names.short) || game.away.alias || game.away.name;
-    const homeRank = game.home.rank;
-    const awayRank = game.away.rank;
+
     if (!homeShort || !awayShort) return;
 
     const homeNormalized = normalizeSchoolName_(homeShort);
     const awayNormalized = normalizeSchoolName_(awayShort);
 
-    if (rosterSet.has(homeNormalized) && !opponents.has(homeNormalized)) {
-      opponents.set(homeNormalized, `vs ${awayShort} ${awayRank ? `(${awayRank})` : ''}`.trim());
+    const homeIdx = normalizedIndex.get(homeNormalized);
+    const awayIdx = normalizedIndex.get(awayNormalized);
+
+    if (typeof homeIdx !== 'undefined') {
+      applyOpponentData_(
+        teams[homeIdx],
+        game,
+        {
+          opponentName: awayShort,
+          opponentRank: game.away?.rank,
+          opponentConference: game.away?.conferences?.[0]?.conferenceSeo
+        },
+        true
+      );
     }
-    if (rosterSet.has(awayNormalized) && !opponents.has(awayNormalized)) {
-      opponents.set(awayNormalized, `@ ${homeShort} ${homeRank ? `(${homeRank})` : ''}`.trim());
+
+    if (typeof awayIdx !== 'undefined') {
+      applyOpponentData_(
+        teams[awayIdx],
+        game,
+        {
+          opponentName: homeShort,
+          opponentRank: game.home?.rank,
+          opponentConference: game.home?.conferences?.[0]?.conferenceSeo
+        },
+        false
+      );
     }
   });
-  return opponents;
+
+  writeTable(TABLE_TEAMS, teams);
+}
+
+function resetOpponentData_(teams, normalizedIndex) {
+  if (!normalizedIndex || normalizedIndex.size === 0) return;
+  normalizedIndex.forEach(idx => {
+    const row = teams[idx];
+    if (row) {
+      row.opponent = '';
+      row.opponent_rank = '';
+      row.opponent_conference = '';
+      row.home_game = '';
+      row.potential_points = 0;
+    }
+  });
+}
+
+function applyOpponentData_(row, game, { opponentName, opponentRank, opponentConference }, teamIsHome) {
+  if (!row) return;
+  row.opponent = opponentName || '';
+  row.opponent_rank = opponentRank || '';
+  row.opponent_conference = opponentConference || '';
+  row.home_game = typeof teamIsHome === 'boolean' ? teamIsHome : '';
+
+  if (typeof calculateGamePoints_ === 'function') {
+    const potentialPoints = calculateGamePoints_(game, teamIsHome);
+    if (typeof potentialPoints === 'number' && !isNaN(potentialPoints)) {
+      row.potential_points = potentialPoints;
+    }
+  }
 }
 
 function getTodayIsoDate_() {
@@ -104,4 +120,33 @@ function getTodayIsoDate_() {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}/${mm}/${dd}`;
+}
+
+function settleScores(sheetName){
+  const teams = sheetName;
+  teams.forEach(rows => {
+    rows.points = rows.points + rows.points_today;
+    if (rows.points_today){
+      Logger.log(`${rows.team} settling ${rows.points_today}.`);
+    }
+    rows.points_today = 0;
+  });
+}
+
+function calculateLostPoints() {
+  let teams = readTable(SHEET_TEAMS);
+  let losses = readTable(BUY_GAME_LOSSES);
+
+  losses.forEach(row => {
+    let teamObj = teams.find(t => t.team === row.team);
+    Logger.log(teamObj);
+
+    if (teamObj) {
+      teamObj.points = Number(teamObj.points) + Number(row.points);
+    } else {
+      Logger.log("Team not found in TEAMS sheet: " + row.team);
+    }
+  });
+
+  writeTable(SHEET_TEAMS, teams);
 }
