@@ -16,7 +16,7 @@ function updateOpponentCellsForDate(isoDate) {
     Logger.log(err);
     return;
   }
-  // settleScores(teams);
+  settleScores(teams);
 
   if (!Array.isArray(teams) || teams.length === 0) {
     Logger.log('No teams found in standings sheet.');
