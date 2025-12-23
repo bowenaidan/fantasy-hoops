@@ -1,5 +1,5 @@
 function updateRunner(isoDate) {
-  const targetIsoDate = isoDate || getTodayIsoDate_();
+  const targetIsoDate = getTodayIsoDate_();
   dailySync(targetIsoDate);
 }
 
