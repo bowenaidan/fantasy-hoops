@@ -5,6 +5,7 @@ function doGet() {
 
 function getTeamsPageData() {
   const teams = readTable(SHEET_TEAMS);
+  const liveScores = readTable(LIVE_SCORES);  
   const managerTotalsMap = new Map();
   const managerDailyTotalMap = new Map();
 
@@ -42,5 +43,6 @@ function getTeamsPageData() {
     teams,
     managerTotals,
     managerDailyTotal, 
+    liveScores,
   };
 }

@@ -687,7 +687,7 @@
       setupTabs();
 
       google.script.run
-        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal }) => {
+        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal, liveScores }) => {
           allTeams = teams || [];
           // renderManagerTotals(managerTotals);
           renderManagerDropdowns(managerTotals, teams, managerDailyTotal);
