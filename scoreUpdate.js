@@ -168,25 +168,36 @@ function saveProcessedGameKeys_(processedGameSet) {
 
 function dailySync(isoDate) {
   const pointMap = new Map();
+  const liveScores = [];
   const rosterLookup = buildRosterLookup_();
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
-  if (!dayGames || !dayGames.games) return;
+
+  if (!dayGames || !dayGames.games) {
+    updateLiveScoresTable_([]);
+    return;
+  }
 
   dayGames.games.forEach(wrapper => {
     const game = wrapper.game || wrapper;
-    if (!isGameFinal_(game)) return;
+    if (!game) return;
 
-    const home = game.home?.names?.short;
-    const away = game.away?.names?.short;
-    if (!home || !away) return;
+    const homeName = game.home?.names?.short || game.home?.alias || game.home?.name;
+    const awayName = game.away?.names?.short || game.away?.alias || game.away?.name;
+    const normalizedHome = normalizeSchoolName_(homeName);
+    const normalizedAway = normalizeSchoolName_(awayName);
+    const homeRosterName = rosterLookup.get(normalizedHome);
+    const awayRosterName = rosterLookup.get(normalizedAway);
+
+    if ((homeRosterName || awayRosterName) && typeof setGameData_ === 'function') {
+      setGameData_(game, liveScores);
+    }
+
+    if (!isGameFinal_(game)) return;
+    if (!homeName || !awayName) return;
 
     const winnerIsHome = !!game.home?.winner;
-    const winnerName = winnerIsHome ? home : away;
-    const loserName = winnerIsHome ? away : home;
-    const normalizedWinner = normalizeSchoolName_(winnerName);
-    const normalizedLoser = normalizeSchoolName_(loserName);
-    const winnerRosterName = rosterLookup.get(normalizedWinner);
-    const loserRosterName = rosterLookup.get(normalizedLoser);
+    const winnerRosterName = winnerIsHome ? homeRosterName : awayRosterName;
+    const loserRosterName = winnerIsHome ? awayRosterName : homeRosterName;
 
     if (!winnerRosterName && !loserRosterName) return;
 
@@ -206,6 +217,8 @@ function dailySync(isoDate) {
     }
 
   });
+
+  updateLiveScoresTable_(liveScores);
 
   if (pointMap.size === 0) {
     Logger.log('No roster winners found for the provided date.');
@@ -257,4 +270,19 @@ function updateStandings_(pointMap) {
   });
 
   writeTable(SHEET_TEAMS, teams);
+}
+
+function updateLiveScoresTable_(gameData) {
+  if (typeof resetLiveScores_ === 'function') {
+    resetLiveScores_();
+  } else {
+    const liveScoresSheet = SpreadsheetApp.getActive().getSheetByName(LIVE_SCORES);
+    if (liveScoresSheet) {
+      liveScoresSheet.clearContents();
+    }
+  }
+
+  if (Array.isArray(gameData) && gameData.length > 0) {
+    writeTable(LIVE_SCORES, gameData);
+  }
 }
