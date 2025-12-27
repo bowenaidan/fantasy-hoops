@@ -47,8 +47,8 @@ function updateOpponentCellsForDate(isoDate) {
     const game = wrapper.game || wrapper;
     if (!game || !game.home || !game.away) return;
 
-    const homeShort = (game.home.names && game.home.names.short) || game.home.alias || game.home.name;
-    const awayShort = (game.away.names && game.away.names.short) || game.away.alias || game.away.name;
+    const homeShort = (game.home.names && game.home.names.short);
+    const awayShort = (game.away.names && game.away.names.short);
 
     if (!homeShort || !awayShort) return;
 
@@ -134,10 +134,10 @@ function setGameData_(game, gameTable) {
 
   gameTable.push({
     game_id: id,
-    home_team: game.home?.names?.short || game.home?.alias || game.home?.name || '',
+    home_team: game.home?.names?.short || '',
     home_rank: game.home?.rank ?? '',
     home_score: game.home?.score ?? '',
-    away_team: game.away?.names?.short || game.away?.alias || game.away?.name || '',
+    away_team: game.away?.names?.short || '',
     away_rank: game.away?.rank ?? '',
     away_score: game.away?.score ?? '',
     time: game.contestClock ?? '',

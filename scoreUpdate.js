@@ -181,8 +181,8 @@ function dailySync(isoDate) {
     const game = wrapper.game || wrapper;
     if (!game) return;
 
-    const homeName = game.home?.names?.short || game.home?.alias || game.home?.name;
-    const awayName = game.away?.names?.short || game.away?.alias || game.away?.name;
+    const homeName = game.home?.names?.short;
+    const awayName = game.away?.names?.short;
     const normalizedHome = normalizeSchoolName_(homeName);
     const normalizedAway = normalizeSchoolName_(awayName);
     const homeRosterName = rosterLookup.get(normalizedHome);
