@@ -168,12 +168,23 @@ function saveProcessedGameKeys_(processedGameSet) {
 
 function dailySync(isoDate) {
   const pointMap = new Map();
+  const liveScores = [];
   const rosterLookup = buildRosterLookup_();
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
-  if (!dayGames || !dayGames.games) return;
+
+  if (!dayGames || !dayGames.games) {
+    updateLiveScoresTable_([]);
+    return;
+  }
 
   dayGames.games.forEach(wrapper => {
     const game = wrapper.game || wrapper;
+    if (!game) return;
+
+    if (typeof setGameData_ === 'function') {
+      setGameData_(game, liveScores);
+    }
+
     if (!isGameFinal_(game)) return;
 
     const home = game.home?.names?.short;
@@ -206,6 +217,8 @@ function dailySync(isoDate) {
     }
 
   });
+
+  updateLiveScoresTable_(liveScores);
 
   if (pointMap.size === 0) {
     Logger.log('No roster winners found for the provided date.');
@@ -257,4 +270,19 @@ function updateStandings_(pointMap) {
   });
 
   writeTable(SHEET_TEAMS, teams);
+}
+
+function updateLiveScoresTable_(gameData) {
+  if (typeof resetLiveScores_ === 'function') {
+    resetLiveScores_();
+  } else {
+    const liveScoresSheet = SpreadsheetApp.getActive().getSheetByName(LIVE_SCORES);
+    if (liveScoresSheet) {
+      liveScoresSheet.clearContents();
+    }
+  }
+
+  if (Array.isArray(gameData) && gameData.length > 0) {
+    writeTable(LIVE_SCORES, gameData);
+  }
 }
