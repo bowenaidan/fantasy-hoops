@@ -5,6 +5,7 @@ function doGet() {
 
 function getTeamsPageData() {
   const teams = readTable(SHEET_TEAMS);
+  const liveScores = readTable(LIVE_SCORES);
   const managerTotalsMap = new Map();
   const managerDailyTotalMap = new Map();
 
@@ -17,6 +18,14 @@ function getTeamsPageData() {
     }
     if (!isNaN(points)) {
       managerTotalsMap.set(manager, (managerTotalsMap.get(manager) || 0) + points);
+    }
+  });
+
+  liveScores.forEach(r => {
+    if (r.time instanceof Date) {
+      r.time = Utilities.formatDate(r.time, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    } else {
+      r.time = String(r.time ?? '');
     }
   });
 
@@ -37,10 +46,13 @@ function getTeamsPageData() {
       }
       return b.totalPoints - a.totalPoints;
     });
+  
+  Logger.log(liveScores);
 
   return {
     teams,
     managerTotals,
-    managerDailyTotal, 
+    managerDailyTotal,
+    liveScores,
   };
 }

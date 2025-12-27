@@ -75,6 +75,14 @@
       display: block;
     }
 
+    .live-scores-table {
+      margin-top: 10px;
+    }
+
+    .live-status {
+      color: #475569;
+    }
+
     .manager-totals {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -352,8 +360,9 @@
     </section>
 
     <section id="scoresTab" class="tab-panel" aria-label="Lives Scores">
-      <h2></h2>
-      <h3>Coming soon...</h3>
+      <h2>Live Scores</h2>
+      <p class="description">Scores for current games involving our drafted teams.</p>
+      <div id="liveScores"></div>
     </section>
 
     <div id="error" class="error" style="display:none;"></div>
@@ -368,6 +377,12 @@
     const searchColumns = [
       'team',
       'points',
+    ];
+
+    const liveScoreColumns = [
+      'home',
+      'score',
+      'away',
     ];
 
     let allTeams = [];
@@ -390,6 +405,12 @@
     function formatColumnName(column) {
       const label = column.replace(/_/g, ' ');
       return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    function formatRankedTeam(name, rank) {
+      const trimmedName = name ?? '';
+      if (!trimmedName) return '';
+      return rank ? `${trimmedName} (${rank})` : trimmedName;
     }
 
     function formatTeamLabel(team) {
@@ -659,6 +680,94 @@
       results.appendChild(table);
     }
 
+    function formatLiveStatus(period, time) {
+      const periodText = (period ?? '').toString().trim();
+      const timeText = (time ?? '').toString().trim();
+
+      if (periodText && timeText) {
+        return `${periodText} | ${timeText}`;
+      }
+      if (periodText) return periodText;
+      if (timeText) return timeText;
+      return 'Scheduled';
+    }
+
+    function formatScoreValue(score) {
+      if (score === null || typeof score === 'undefined' || score === '') {
+        return '—';
+      }
+      return score;
+    }
+
+    function renderLiveScores(liveScores = []) {
+      const container = document.getElementById('liveScores');
+      container.innerHTML = '';
+
+      if (!Array.isArray(liveScores) || liveScores.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = 'No games today.';
+        container.appendChild(empty);
+        return;
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'teams-table-wrapper live-scores-table';
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+
+      liveScoreColumns.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = formatColumnName(col);
+        headerRow.appendChild(th);
+      });
+
+      thead.appendChild(headerRow);
+
+      const tbody = document.createElement('tbody');
+
+      liveScores.forEach(game => {
+        const row = document.createElement('tr');
+
+        const awayLabel = formatRankedTeam(game.away_team, game.away_rank);
+        const homeLabel = formatRankedTeam(game.home_team, game.home_rank);
+
+        liveScoreColumns.forEach(col => {
+          const td = document.createElement('td');
+          td.dataset.label = formatColumnName(col);
+
+          if (col === 'home') {
+            td.innerHTML = `
+              <strong>${homeLabel}</strong>
+            `;
+          } else if (col === 'score') {
+            const awayScore = formatScoreValue(game.away_score);
+            const homeScore = formatScoreValue(game.home_score);
+            td.innerHTML = `<strong>${homeScore}</strong> - <strong>${awayScore}</strong>`;
+            const statusLabel = document.createElement('span');
+            statusLabel.className = 'team-manager';
+            statusLabel.textContent = formatLiveStatus(game.period, game.time);
+            td.appendChild(statusLabel);
+          } else if (col === 'away') {
+            td.innerHTML = `
+              <strong>${awayLabel}</strong>
+            `;
+          }
+
+          row.appendChild(td);
+        });
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      container.appendChild(wrapper);
+    }
+
     function setupTabs() {
       const buttons = Array.from(document.querySelectorAll('.tab-button'));
       buttons.forEach(button => {
@@ -687,11 +796,12 @@
       setupTabs();
 
       google.script.run
-        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal }) => {
+        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal, liveScores }) => {
           allTeams = teams || [];
           // renderManagerTotals(managerTotals);
           renderManagerDropdowns(managerTotals, teams, managerDailyTotal);
           renderTeamSearch(allTeams);
+          renderLiveScores(liveScores || []);
 
           const searchInput = document.getElementById('teamSearch');
           searchInput.addEventListener('input', (event) => {
