@@ -32,6 +32,7 @@ function updateOpponentCellsForDate(isoDate) {
   });
 
   resetOpponentData_(teams, normalizedIndex);
+  resetLiveScores_();
 
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
   if (!dayGames || !Array.isArray(dayGames.games) || dayGames.games.length === 0) {
@@ -39,6 +40,8 @@ function updateOpponentCellsForDate(isoDate) {
     writeTable(TABLE_TEAMS, teams);
     return;
   }
+
+  let gameData = [];
 
   dayGames.games.forEach(wrapper => {
     const game = wrapper.game || wrapper;
@@ -66,6 +69,7 @@ function updateOpponentCellsForDate(isoDate) {
         },
         true
       );
+      setGameData_(game, gameData);
     }
 
     if (typeof awayIdx !== 'undefined') {
@@ -79,10 +83,12 @@ function updateOpponentCellsForDate(isoDate) {
         },
         false
       );
+      setGameData_(game, gameData);
     }
   });
 
   writeTable(TABLE_TEAMS, teams);
+  writeTable(LIVE_SCORES, gameData);
 }
 
 function resetOpponentData_(teams, normalizedIndex) {
@@ -99,6 +105,11 @@ function resetOpponentData_(teams, normalizedIndex) {
   });
 }
 
+function resetLiveScores_() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(LIVE_SCORES);
+  sheet.clearContents();
+}
+
 function applyOpponentData_(row, game, { opponentName, opponentRank, opponentConference }, teamIsHome) {
   if (!row) return;
   row.opponent = opponentName || '';
@@ -112,6 +123,26 @@ function applyOpponentData_(row, game, { opponentName, opponentRank, opponentCon
       row.potential_points = potentialPoints;
     }
   }
+}
+
+function setGameData_(game, gameTable) {
+  const id = game.gameID || '';
+  if (!id) return;
+
+  // avoid duplicates
+  if (gameTable.some(row => row.game_id === id)) return;
+
+  gameTable.push({
+    game_id: id,
+    home_team: game.home?.names?.short || game.home?.alias || game.home?.name || '',
+    home_rank: game.home?.rank ?? '',
+    home_score: game.home?.score ?? '',
+    away_team: game.away?.names?.short || game.away?.alias || game.away?.name || '',
+    away_rank: game.away?.rank ?? '',
+    away_score: game.away?.score ?? '',
+    time: game.contestClock ?? '',
+    period: game.currentPeriod ?? '',
+  });
 }
 
 function getTodayIsoDate_() {
