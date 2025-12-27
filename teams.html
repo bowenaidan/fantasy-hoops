@@ -793,12 +793,23 @@
       setupTabs();
 
       google.script.run
-        .withSuccessHandler(({ teams, managerTotals, managerDailyTotal, liveScores }) => {
-          allTeams = teams || [];
-          // renderManagerTotals(managerTotals);
+        .withSuccessHandler((data) => {
+          if (!data || typeof data !== 'object') {
+            showError('No teams data available.');
+            return;
+          }
+
+          const {
+            teams = [],
+            managerTotals = [],
+            managerDailyTotal = [],
+            liveScores = [],
+          } = data;
+
+          allTeams = teams;
           renderManagerDropdowns(managerTotals, teams, managerDailyTotal);
           renderTeamSearch(allTeams);
-          renderLiveScores(liveScores || []);
+          renderLiveScores(liveScores);
 
           const searchInput = document.getElementById('teamSearch');
           searchInput.addEventListener('input', (event) => {
