@@ -360,6 +360,232 @@
         overflow: visible;
       }
     }
+
+    :root{
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+
+      --shadow-sm: 0 1px 2px rgba(2, 6, 23, .06);
+      --shadow-md: 0 6px 20px rgba(2, 6, 23, .08);
+
+      --radius: 14px;
+      --radius-sm: 10px;
+
+      /* “Sportsy” accent without going neon */
+      --accent: #2563eb;     /* blue */
+      --accent-2: #22c55e;   /* green */
+      --danger: #ef4444;     /* red */
+    }
+
+    body{
+      background: radial-gradient(1200px 800px at 50% -200px, #e0f2fe 0%, var(--bg) 55%);
+      color: var(--text);
+    }
+
+    /* Container becomes a real “page card” on larger screens */
+    .page{
+      max-width: 1100px;
+      padding: 28px 18px 44px;
+    }
+
+    h1{
+      margin: 0 0 6px;
+      letter-spacing: -0.03em;
+    }
+
+    .description{
+      color: var(--muted);
+    }
+
+    /* Tabs become pill-tabs */
+    .tabs{
+      gap: 10px;
+      border-bottom: none;
+      padding: 6px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(8px);
+    }
+
+    .tab-button{
+      border: none;
+      background: transparent;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .tab-button.active{
+      background: var(--card);
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Section headings */
+    h2{
+      margin: 18px 0 12px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Inputs */
+    .search-bar{
+      margin: 14px 0 10px;
+    }
+
+    .search-input{
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+      outline: none;
+    }
+
+    .search-input:focus{
+      border-color: rgba(37, 99, 235, .45);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .12), var(--shadow-sm);
+    }
+
+    /* Manager dropdown becomes a nicer card */
+    details.manager-dropdown{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+      overflow: clip;
+    }
+
+    details.manager-dropdown[open]{
+      box-shadow: var(--shadow-md);
+      border-color: rgba(37, 99, 235, .25);
+    }
+
+    .manager-summary{
+      padding: 16px 18px;
+    }
+
+    .manager-name{
+      font-weight: 800;
+    }
+
+    /* Make the points feel like a “score” */
+    .manager-points{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Turn +/- into badge chips */
+    .points-gain,
+    .points-loss{
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .points-gain{
+      color: #166534;
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .points-loss{
+      color: #991b1b;
+      background: rgba(239, 68, 68, .14);
+    }
+
+    /* Accordion body */
+    .manager-teams{
+      background: #f8fafc;
+      padding: 14px 16px 16px;
+    }
+
+    /* Tables: cleaner, hover, numeric alignment */
+    table{
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    th{
+      background: #f1f5f9;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: .95rem;
+      position: sticky;
+      top: 0;
+    }
+
+    td{
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:hover{
+      background: #f8fafc;
+    }
+
+    /* Right-align points columns */
+    td[data-label="Points"], 
+    td:nth-child(2){
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Live scores table: score column centered */
+    .live-scores-table td.live-score-score{
+      text-align: center;
+    }
+
+    /* Opponent/status subtle */
+    .live-status,
+    .team-manager{
+      color: var(--muted);
+    }
+
+    /* Empty/error */
+    .empty-state{
+      color: var(--muted);
+    }
+
+    .error{
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Mobile: make the stacked table feel like cards */
+    @media (max-width: 640px){
+      tr{
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      td{
+        padding: 12px 12px 12px 44%;
+      }
+      td::before{
+        color: var(--muted);
+        letter-spacing: .02em;
+      }
+    }
   </style>
 </head>
 <body>
