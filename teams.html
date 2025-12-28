@@ -6,19 +6,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fantasy Hoops Teams</title>
   <style>
+    :root {
+      color-scheme: light dark;
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-end: #1e293b;
+      --card-bg: rgba(15, 23, 42, 0.82);
+      --card-border: rgba(148, 163, 184, 0.22);
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.16);
+      --table-header-bg: rgba(56, 189, 248, 0.12);
+      --table-row-hover: rgba(56, 189, 248, 0.08);
+      --table-border: rgba(148, 163, 184, 0.25);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-gradient-start: #f8fafc;
+        --bg-gradient-end: #e2e8f0;
+        --card-bg: rgba(255, 255, 255, 0.94);
+        --card-border: rgba(15, 23, 42, 0.08);
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --accent: #0284c7;
+        --accent-soft: rgba(2, 132, 199, 0.14);
+        --table-header-bg: rgba(2, 132, 199, 0.12);
+        --table-row-hover: rgba(2, 132, 199, 0.08);
+        --table-border: rgba(15, 23, 42, 0.1);
+      }
+    }
+
     body {
       font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      color: #0f172a;
-      background: #f8fafc;
+      color: var(--text-primary);
+      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 24%),
+        linear-gradient(150deg, var(--bg-gradient-start), var(--bg-gradient-end));
       font-size: 22.48px;
       line-height: 1.6;
+      min-height: 100vh;
     }
 
     .page {
       margin: 0 auto;
       padding: 28px 18px 44px;
       max-width: 1100px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 26px 48px rgba(15, 23, 42, 0.26);
+      backdrop-filter: blur(12px);
     }
 
     h1 {
@@ -26,45 +64,49 @@
       font-size: clamp(2.645rem, 3.97vw, 3.70rem);
       letter-spacing: -0.01em;
       font-weight: 700;
+      color: var(--text-primary);
     }
 
     h2 {
       margin: 12px 0 10px;
       font-size: clamp(1.78rem, 3.17vw, 2.32rem);
       letter-spacing: -0.01em;
+      color: var(--text-primary);
     }
 
     .description {
       margin-top: 0;
-      color: #475569;
+      color: var(--text-secondary);
       font-size: 1.32rem;
     }
 
     .tabs {
       display: flex;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--card-border);
       margin: 20px 0 12px;
       gap: 8px;
     }
 
     .tab-button {
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--card-border);
       border-bottom: none;
-      background: #e2e8f0;
-      color: #0f172a;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--text-secondary);
       padding: 10px 14px;
-      border-radius: 8px 8px 0 0;
+      border-radius: 12px 12px 0 0;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1.32rem;
-      transition: background 0.15s ease, color 0.15s ease;
+      letter-spacing: 0.01em;
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+      backdrop-filter: blur(6px);
     }
 
     .tab-button.active {
-      background: white;
-      color: #0f172a;
-      border-color: #cbd5e1;
-      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+      background: var(--accent);
+      color: #0b1224;
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.3);
     }
 
     .tab-panel {
@@ -106,7 +148,7 @@
     }
 
     .live-status {
-      color: #475569;
+      color: var(--text-secondary);
     }
 
     .manager-totals {
@@ -119,16 +161,17 @@
     }
 
     .manager-card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
       padding: 12px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.24);
     }
 
     .manager-name {
       margin: 0 0 6px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-primary);
     }
 
     .dropdown-list {
@@ -149,22 +192,35 @@
     .search-input {
       flex: 1 1 260px;
       padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
       font-size: 21.16px;
-      background: white;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--text-primary);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .search-input:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+      background: rgba(56, 189, 248, 0.12);
     }
 
     .search-hint {
-      color: #475569;
+      color: var(--text-secondary);
       font-size: 19.84px;
     }
 
     details.manager-dropdown {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      background: rgba(15, 23, 42, 0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.28);
       overflow: hidden;
     }
 
@@ -176,6 +232,7 @@
       padding: 16px 18px;
       cursor: pointer;
       list-style: none;
+      background: rgba(56, 189, 248, 0.08);
     }
 
     .summary-title {
@@ -190,25 +247,31 @@
     }
 
     .manager-points {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1.39rem;
-      color: #0f172a;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .summary-hint {
       font-size: 1.25rem;
-      color: #475569;
+      color: var(--text-secondary);
     }
 
     .manager-teams {
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--card-border);
       padding: 14px 16px 16px;
-      background: #f8fafc;
+      background: rgba(15, 23, 42, 0.55);
     }
 
     .teams-table-wrapper {
       overflow-x: auto;
       width: 100%;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.2);
     }
 
     table {
@@ -218,36 +281,45 @@
 
     th, td {
       padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--table-border);
       text-align: left;
       font-size: 1.30rem;
+      color: var(--text-primary);
+      background: transparent;
     }
 
     .points-gain {
-      color: #16a34a;
-      font-weight: 600;
+      color: #22c55e;
+      font-weight: 700;
     }
 
     .points-loss {
-      color: #FF0000;
-      font-weight: 600;
+      color: #ef4444;
+      font-weight: 700;
     }
 
     th {
-      background: #e2e8f0;
-      font-weight: 600;
-      color: #0f172a;
+      background: var(--table-header-bg);
+      font-weight: 700;
+      color: var(--text-secondary);
       position: sticky;
       top: 0;
       z-index: 1;
+      backdrop-filter: blur(8px);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     tbody tr:nth-child(even) {
-      background: #fff;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody tr:hover {
+      background: var(--table-row-hover);
     }
 
     .empty-state {
-      color: #475569;
+      color: var(--text-secondary);
       font-size: 1.27rem;
       margin: 6px 0 0;
     }
@@ -260,25 +332,25 @@
       display: inline-block;
       padding: 4px 10px;
       border-radius: 999px;
-      background: #e2e8f0;
-      color: #0f172a;
+      background: var(--accent-soft);
+      color: var(--accent);
       font-size: 1.20rem;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .team-manager {
       display: block;
-      color: #475569;
+      color: var(--text-secondary);
       font-size: 1.05rem;
       margin-top: 2px;
     }
 
     .error {
-      color: #b91c1c;
-      background: #fee2e2;
+      color: #fecdd3;
+      background: rgba(248, 113, 113, 0.14);
       padding: 8px 12px;
-      border: 1px solid #fecdd3;
-      border-radius: 4px;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      border-radius: 10px;
       margin-top: 12px;
     }
 
