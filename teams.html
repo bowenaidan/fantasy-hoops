@@ -747,6 +747,17 @@
       wrapper.className = 'teams-table-wrapper live-scores-table';
 
       const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+
+      liveScoreColumns.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = formatColumnName(col);
+        headerRow.appendChild(th);
+      });
+
+      thead.appendChild(headerRow);
+
       const tbody = document.createElement('tbody');
 
       liveScores.forEach(game => {
@@ -784,6 +795,7 @@
         tbody.appendChild(row);
       });
 
+      table.appendChild(thead);
       table.appendChild(tbody);
       wrapper.appendChild(table);
       container.appendChild(wrapper);
