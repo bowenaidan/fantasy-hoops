@@ -6,389 +6,522 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fantasy Hoops Teams</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      color: #0f172a;
-      background: #f8fafc;
-      font-size: 22.48px;
-      line-height: 1.6;
+    :root {
+      color-scheme: light dark;
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-end: #1e293b;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(148, 163, 184, 0.2);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --table-header-bg: rgba(56, 189, 248, 0.12);
+      --table-row-hover: rgba(56, 189, 248, 0.08);
+      --table-border: rgba(148, 163, 184, 0.25);
     }
 
-    .page {
-      margin: 0 auto;
-      padding: 28px 18px 44px;
-      max-width: 1100px;
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-gradient-start: #f8fafc;
+        --bg-gradient-end: #e2e8f0;
+        --card-bg: rgba(255, 255, 255, 0.92);
+        --card-border: rgba(15, 23, 42, 0.08);
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --accent: #0284c7;
+        --accent-soft: rgba(2, 132, 199, 0.12);
+        --table-header-bg: rgba(2, 132, 199, 0.1);
+        --table-row-hover: rgba(2, 132, 199, 0.08);
+        --table-border: rgba(15, 23, 42, 0.08);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      color: var(--text-primary);
+      padding: 48px 24px;
+    }
+
+    .container {
+      width: min(1200px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     h1 {
-      margin-bottom: 8px;
-      font-size: clamp(2.645rem, 3.97vw, 3.70rem);
-      letter-spacing: -0.01em;
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 3rem);
       font-weight: 700;
-    }
-
-    h2 {
-      margin: 12px 0 10px;
-      font-size: clamp(1.78rem, 3.17vw, 2.32rem);
       letter-spacing: -0.01em;
     }
 
-    .description {
-      margin-top: 0;
-      color: #475569;
-      font-size: 1.32rem;
+    .subheading {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0;
     }
 
-    .tabs {
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .tab-controls {
       display: flex;
-      border-bottom: 1px solid #e2e8f0;
-      margin: 20px 0 12px;
-      gap: 8px;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .tab-list {
+      display: inline-flex;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 6px;
+      gap: 6px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
     }
 
     .tab-button {
-      border: 1px solid #e2e8f0;
-      border-bottom: none;
-      background: #e2e8f0;
-      color: #0f172a;
-      padding: 10px 14px;
-      border-radius: 8px 8px 0 0;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 1.32rem;
-      transition: background 0.15s ease, color 0.15s ease;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      font-size: 1rem;
     }
 
-    .tab-button.active {
-      background: white;
-      color: #0f172a;
-      border-color: #cbd5e1;
-      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+    .tab-button:hover,
+    .tab-button:focus-visible {
+      background: var(--accent-soft);
+      color: var(--accent);
+      outline: none;
+      transform: translateY(-1px);
     }
 
-    .tab-panel {
+    .tab-button.is-active {
+      background: var(--accent);
+      color: #0b1224;
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.35);
+    }
+
+    .tab-panel[hidden] {
       display: none;
     }
 
-    .tab-panel.active {
-      display: block;
-    }
-
-    .live-scores-table {
-      margin-top: 10px;
-    }
-
-    .live-scores-table table {
-      table-layout: fixed;
-    }
-
-    .live-scores-table th:first-child,
-    .live-scores-table td.live-score-home {
-      text-align: left;
-    }
-
-    .live-scores-table th:nth-child(2),
-    .live-scores-table td.live-score-score {
-      text-align: center;
-    }
-
-    .live-scores-table th:last-child,
-    .live-scores-table td.live-score-away {
-      text-align: right;
-    }
-
-    .live-score-score {
+    .tab-panel {
+      margin-top: 18px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 4px;
+      gap: 14px;
     }
 
-    .live-status {
-      color: #475569;
-    }
-
-    .manager-totals {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin: 16px 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .manager-card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 12px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-    }
-
-    .manager-name {
-      margin: 0 0 6px;
-      font-weight: 600;
-    }
-
-    .dropdown-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 16px;
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      letter-spacing: -0.01em;
     }
 
     .search-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 16px 0 12px;
-      flex-wrap: wrap;
+      margin: 0 0 8px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: transparent;
     }
 
     .search-input {
-      flex: 1 1 260px;
-      padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 21.16px;
-      background: white;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--text-primary);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
-    .search-hint {
-      color: #475569;
-      font-size: 19.84px;
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .search-input:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .manager-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     details.manager-dropdown {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      background: rgba(56, 189, 248, 0.08);
+      transition: transform 0.2s ease, background 0.2s ease;
       overflow: hidden;
+    }
+
+    details.manager-dropdown:nth-child(odd) {
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    details.manager-dropdown[open] {
+      background: rgba(56, 189, 248, 0.18);
+      transform: translateY(-2px);
     }
 
     .manager-summary {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 16px 18px;
+      gap: 16px;
+      padding: 18px 20px;
       cursor: pointer;
       list-style: none;
     }
 
-    .summary-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .manager-summary::-webkit-details-marker {
+      display: none;
     }
 
-    .summary-title .manager-name {
-      margin: 0;
-      font-size: 1.39rem;
-    }
-
-    .manager-points {
+    .manager-name {
+      font-size: 1.05rem;
       font-weight: 600;
-      font-size: 1.39rem;
-      color: #0f172a;
+      letter-spacing: 0.01em;
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
     }
 
-    .summary-hint {
-      font-size: 1.25rem;
-      color: #475569;
+    .manager-name::after {
+      content: '\25BC';
+      font-size: 0.75em;
+      transition: transform 0.2s ease;
+    }
+
+    details[open] .manager-name::after {
+      transform: rotate(-180deg);
+    }
+
+    .manager-score {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .manager-score-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .points-gain {
+      color: #16a34a;
+      font-weight: 700;
+    }
+
+    .points-loss {
+      color: #ff4d4f;
+      font-weight: 700;
     }
 
     .manager-teams {
-      border-top: 1px solid #e2e8f0;
-      padding: 14px 16px 16px;
-      background: #f8fafc;
+      padding: 0 20px 18px;
+      background: rgba(15, 23, 42, 0.2);
+      border-top: 1px solid var(--card-border);
     }
 
-    .teams-table-wrapper {
+    .manager-detail-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .manager-detail-list__item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: baseline;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.15);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .manager-detail-list__term {
+      margin: 0;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .manager-detail-list__description {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .manager-team-heading {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      font-weight: 700;
+      margin: 12px 0 8px;
+    }
+
+    .manager-team-table-scroll {
       overflow-x: auto;
-      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.2);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 320px;
+      table-layout: fixed;
+      color: var(--text-primary);
     }
 
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
+    th,
+    td {
+      padding: 10px 14px;
       text-align: left;
-      font-size: 1.30rem;
-    }
-
-    .points-gain {
-      color: #16a34a;
-      font-weight: 600;
-    }
-
-    .points-loss {
-      color: #FF0000;
-      font-weight: 600;
+      border-bottom: 1px solid var(--table-border);
+      font-size: 0.95rem;
+      word-break: break-word;
     }
 
     th {
-      background: #e2e8f0;
-      font-weight: 600;
-      color: #0f172a;
-      position: sticky;
-      top: 0;
-      z-index: 1;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      background: var(--table-header-bg);
     }
 
-    tbody tr:nth-child(even) {
-      background: #fff;
+    tbody tr:last-child td {
+      border-bottom: none;
     }
 
-    .empty-state {
-      color: #475569;
-      font-size: 1.27rem;
-      margin: 6px 0 0;
+    tbody tr:hover {
+      background: var(--table-row-hover);
     }
 
-    .search-results table {
+    .manager-team-table th.is-primary-score,
+    .manager-team-table td.is-primary-score {
+      width: 110px;
+      text-align: right;
+      padding-right: 18px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .manager-team-table th.is-opponent,
+    .manager-team-table td.is-opponent {
+      width: 130px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .manager-team-name {
+      font-weight: 700;
+    }
+
+    .search-results table,
+    .live-scores-table table {
       min-width: 0;
     }
 
-    .pill {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #e2e8f0;
-      color: #0f172a;
-      font-size: 1.20rem;
-      font-weight: 600;
+    .empty-state {
+      text-align: center;
+      padding: 24px 12px;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin: 0;
     }
 
     .team-manager {
       display: block;
-      color: #475569;
-      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
       margin-top: 2px;
     }
 
+    .live-status {
+      color: var(--text-secondary);
+      display: block;
+      margin-top: 4px;
+    }
+
     .error {
-      color: #b91c1c;
-      background: #fee2e2;
-      padding: 8px 12px;
-      border: 1px solid #fecdd3;
-      border-radius: 4px;
+      color: #fef2f2;
+      background: rgba(248, 113, 113, 0.15);
+      padding: 12px 14px;
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 12px;
       margin-top: 12px;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       body {
-        font-size: 22.48px;
+        padding: 32px 16px;
       }
 
-      h1 {
-        font-size: 2.65rem;
-      }
-
-      h2 {
-        font-size: 1.78rem;
-      }
-
-      .page {
-        padding: 20px 14px 36px;
-      }
-
-      .manager-card {
-        padding: 12px;
+      .card {
+        padding: 16px;
+        border-radius: 20px;
       }
 
       .manager-summary {
+        padding: 14px 14px 12px;
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
       }
 
-      .manager-teams {
-        padding: 12px 12px 14px;
+      .manager-score {
+        font-size: 1.05rem;
+        align-self: center;
       }
 
-      table,
-      thead,
-      tbody,
+      .manager-team-table th,
+      .manager-team-table td {
+        padding: 10px 10px;
+        font-size: 0.9rem;
+      }
+
+      .manager-team-table th.is-primary-score,
+      .manager-team-table td.is-primary-score {
+        width: 90px;
+        padding-right: 16px;
+      }
+
+      .manager-team-table th.is-opponent,
+      .manager-team-table td.is-opponent {
+        width: 110px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
       th,
-      td,
-      tr {
-        display: block;
-      }
-
-      thead {
-        display: none;
-      }
-
-      tr {
-        margin-bottom: 12px;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-      }
-
       td {
-        border-bottom: 1px solid #e2e8f0;
-        position: relative;
-        padding: 12px 12px 12px 44%;
-        font-size: 22.48px;
-      }
-
-      td:last-child {
-        border-bottom: none;
-      }
-
-      td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 12px;
-        top: 12px;
-        font-weight: 600;
-        color: #475569;
-        font-size: 19.84px;
-        text-transform: capitalize;
-      }
-
-      .teams-table-wrapper {
-        overflow: visible;
+        font-size: 0.9rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <h1>Fantasy Hoops</h1>
+  <div class="container">
+    <header class="page-header card">
+      <span class="badge">Fantasy Hoops</span>
+      <h1>Teams dashboard</h1>
+      <p class="subheading">Track managers, team scores, and live matchups</p>
+    </header>
 
-    <div class="tabs" role="tablist">
-      <button class="tab-button active" data-tab="manager" role="tab" aria-selected="true">By manager</button>
-      <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Search teams</button>
-      <button class="tab-button" data-tab="scores" role="tab" aria-selected="false">Live Scores</button>
-    </div>
-
-    <section id="managerTab" class="tab-panel active" aria-label="Teams by manager">
-      <h2>Teams by manager</h2>
-      <div id="managerDropdowns" class="dropdown-list"></div>
-    </section>
-
-    <section id="searchTab" class="tab-panel" aria-label="Search teams">
-      <h2>Search by team</h2>
-      <div class="search-bar">
-        <input id="teamSearch" class="search-input" type="search" placeholder="Start typing a team name" aria-label="Search teams" />
+    <div class="card">
+      <div class="tab-controls" role="tablist">
+        <div class="tab-list">
+          <button class="tab-button is-active" data-tab="manager" role="tab" aria-selected="true">By manager</button>
+          <button class="tab-button" data-tab="search" role="tab" aria-selected="false">Search teams</button>
+          <button class="tab-button" data-tab="scores" role="tab" aria-selected="false">Live Scores</button>
+        </div>
       </div>
-      <div id="searchResults" class="search-results"></div>
-    </section>
 
-    <section id="scoresTab" class="tab-panel" aria-label="Lives Scores">
-      <h2>Live Scores</h2>
-      <div id="liveScores"></div>
-    </section>
+      <section id="managerTab" class="tab-panel active" aria-label="Teams by manager">
+        <h2>Teams by manager</h2>
+        <div id="managerDropdowns" class="dropdown-list manager-list"></div>
+      </section>
+
+      <section id="searchTab" class="tab-panel" aria-label="Search teams" hidden>
+        <h2>Search by team</h2>
+        <div class="search-bar">
+          <input id="teamSearch" class="search-input" type="search" placeholder="Start typing a team name" aria-label="Search teams" />
+        </div>
+        <div id="searchResults" class="search-results"></div>
+      </section>
+
+      <section id="scoresTab" class="tab-panel" aria-label="Lives Scores" hidden>
+        <h2>Live Scores</h2>
+        <div id="liveScores"></div>
+      </section>
+    </div>
 
     <div id="error" class="error" style="display:none;"></div>
   </div>
@@ -462,6 +595,7 @@
         return acc;
       }, {});
       const dropdownList = document.getElementById('managerDropdowns');
+      dropdownList.className = 'dropdown-list manager-list';
       dropdownList.innerHTML = '';
 
       const teamsByManager = teams.reduce((acc, team) => {
@@ -483,32 +617,53 @@
 
         const daily = dailyByManager[manager] ?? 0;
 
-        let dailyClass = '';
         let dailyHtml = '';
 
         if (daily > 0) {
-          dailyClass = 'points-gain';
-          dailyHtml = `<span class="${dailyClass}">+${daily}</span>`;
+          dailyHtml = `<span class="points-gain">+${daily}</span>`;
         } else if (daily < 0) {
-          dailyClass = 'points-loss';
-          dailyHtml = `<span class="${dailyClass}">${daily}</span>`;
+          dailyHtml = `<span class="points-loss">${daily}</span>`;
         }
+
         const details = document.createElement('details');
-        details.className = 'manager-dropdown';
+        details.className = 'manager-dropdown manager-item';
 
         const summary = document.createElement('summary');
         summary.className = 'manager-summary';
         summary.innerHTML = `
-          <div class="summary-title">
-            <p class="manager-name">${manager}</p>
+          <div class="manager-header">
+            <span class="manager-name">${manager}</span>
+            <p class="manager-score">
+              <span class="manager-score-label">Total</span>
+              ${totalPoints + daily} pts
+              ${dailyHtml}
+            </p>
           </div>
-          <span class="manager-points">
-            ${dailyHtml} ${totalPoints + daily} pts
-          </span>
         `;
 
         const teamsContainer = document.createElement('div');
         teamsContainer.className = 'manager-teams';
+
+        const detailList = document.createElement('dl');
+        detailList.className = 'manager-detail-list';
+
+        const totalItem = document.createElement('div');
+        totalItem.className = 'manager-detail-list__item';
+        totalItem.innerHTML = `
+          <dt class="manager-detail-list__term">Teams</dt>
+          <dd class="manager-detail-list__description">${managerTeams.length}</dd>
+        `;
+
+        const todayItem = document.createElement('div');
+        todayItem.className = 'manager-detail-list__item';
+        todayItem.innerHTML = `
+          <dt class="manager-detail-list__term">Today</dt>
+          <dd class="manager-detail-list__description">${dailyHtml || '0'}</dd>
+        `;
+
+        detailList.appendChild(totalItem);
+        detailList.appendChild(todayItem);
+        teamsContainer.appendChild(detailList);
 
         if (!managerTeams.length) {
           const empty = document.createElement('p');
@@ -516,17 +671,27 @@
           empty.textContent = 'No teams assigned to this manager.';
           teamsContainer.appendChild(empty);
         } else {
+          const heading = document.createElement('p');
+          heading.className = 'manager-team-heading';
+          heading.textContent = 'Teams';
+          teamsContainer.appendChild(heading);
+
           const wrapper = document.createElement('div');
-          wrapper.className = 'teams-table-wrapper';
+          wrapper.className = 'manager-team-table-scroll';
 
           const table = document.createElement('table');
+          table.className = 'manager-team-table';
           const thead = document.createElement('thead');
           const headerRow = document.createElement('tr');
+
           columns.forEach(col => {
             const th = document.createElement('th');
             th.textContent = formatColumnName(col);
+            if (col === 'points') th.classList.add('is-primary-score');
+            if (col === 'opponent') th.classList.add('is-opponent');
             headerRow.appendChild(th);
           });
+
           thead.appendChild(headerRow);
 
           const tbody = document.createElement('tbody');
@@ -535,62 +700,51 @@
             columns.forEach(col => {
               const td = document.createElement('td');
               td.dataset.label = formatColumnName(col);
+              if (col === 'points') td.classList.add('is-primary-score');
+              if (col === 'opponent') td.classList.add('is-opponent');
+
               if (col === 'team') {
-                const teamName = team[col] ?? '';
-                const rank = team?.rank;
-                const opponentName = team?.opponent;
-                const opponentRank = team?.opponent_rank;
-                const opponentPrefix = getOpponentPrefix(team);
+                const label = formatTeamLabel(team);
+                const strong = document.createElement('strong');
+                strong.className = 'manager-team-name';
+                strong.textContent = label;
+                td.appendChild(strong);
 
-                const teamTitle = document.createElement('strong');
-                teamTitle.textContent = rank ? `${teamName} (${rank})` : teamName;
-                td.appendChild(teamTitle);
-
-                const opponentDetails = [
-                  opponentName ? `${opponentPrefix || ''}${opponentPrefix ? ' ' : ''}${opponentName}` : null,
-                  opponentRank ? `(${opponentRank})` : null,
-                ].filter(Boolean).join(' ');
-
-                if (opponentDetails) {
-                  const opponentSpan = document.createElement('span');
-                  opponentSpan.textContent = ` ${opponentDetails}`;
-                  td.appendChild(opponentSpan);
+                if (team?.opponent) {
+                  const opponentLabel = document.createElement('span');
+                  opponentLabel.textContent = formatOpponentLabel(team);
+                  td.appendChild(opponentLabel);
                 }
-              } else if (col === 'opponent') {
-                const opponentName = team[col] ?? '';
-                const opponentRank = team?.opponent_rank;
-                td.textContent = opponentRank ? `${opponentName} (${opponentRank})` : opponentName;
+
+                if (team?.manager) {
+                  const managerLabel = document.createElement('span');
+                  managerLabel.className = 'team-manager';
+                  managerLabel.textContent = team.manager;
+                  td.appendChild(managerLabel);
+                }
               } else if (col === 'points') {
                 const pointsToday = Number(team.points_today) || 0;
                 const potentialPoints = Number(team.potential_points) || 0;
-                const details = [];
-
-                const detailText = details.length ? ` ${details.join(', ')}` : '';
                 td.textContent = `${team[col] + pointsToday ?? ''}`;
 
-                if((potentialPoints !== 0) && (potentialPoints !== pointsToday)) {
+                if ((potentialPoints !== 0) && (potentialPoints !== pointsToday)) {
                   const pointsTodaySpan = document.createElement('span');
                   pointsTodaySpan.textContent = ` (+${potentialPoints})`;
                   td.appendChild(pointsTodaySpan);
                 }
 
                 if (pointsToday) {
-                  if (pointsToday > 0){
-                    const pointsTodaySpan = document.createElement('span');
-                    pointsTodaySpan.className = 'points-gain';
-                    pointsTodaySpan.textContent = ` +${pointsToday}`;
-                    td.appendChild(pointsTodaySpan);
-                  }
-                  else {
-                    const pointsTodaySpan = document.createElement('span');
-                    pointsTodaySpan.className = 'points-loss';
-                    pointsTodaySpan.textContent = ` ${pointsToday}`;
-                    td.appendChild(pointsTodaySpan);
-                  }
+                  const pointsTodaySpan = document.createElement('span');
+                  pointsTodaySpan.className = pointsToday > 0 ? 'points-gain' : 'points-loss';
+                  pointsTodaySpan.textContent = ` ${pointsToday > 0 ? '+' : ''}${pointsToday}`;
+                  td.appendChild(pointsTodaySpan);
                 }
+              } else if (col === 'opponent') {
+                td.textContent = formatOpponentLabel(team);
               } else {
                 td.textContent = team[col] ?? '';
               }
+
               row.appendChild(td);
             });
             tbody.appendChild(row);
@@ -635,11 +789,13 @@
       }
 
       const table = document.createElement('table');
+      table.className = 'manager-team-table';
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
       searchColumns.forEach(col => {
         const th = document.createElement('th');
         th.textContent = formatColumnName(col);
+        if (col === 'points') th.classList.add('is-primary-score');
         headerRow.appendChild(th);
       });
       thead.appendChild(headerRow);
@@ -650,6 +806,7 @@
         searchColumns.forEach(col => {
           const td = document.createElement('td');
           td.dataset.label = formatColumnName(col);
+          if (col === 'points') td.classList.add('is-primary-score');
 
           if (col === 'team') {
             const teamLabel = document.createElement('strong');
@@ -671,30 +828,19 @@
           } else if (col === 'points') {
             const pointsToday = Number(team.points_today) || 0;
             const potentialPoints = Number(team.potential_points) || 0;
-            const details = [];
-
-            const detailText = details.length ? ` ${details.join(', ')}` : '';
             td.textContent = `${team[col] + pointsToday ?? ''}`;
 
-            if((potentialPoints !== 0) && (potentialPoints !== pointsToday)) {
+            if ((potentialPoints !== 0) && (potentialPoints !== pointsToday)) {
               const pointsTodaySpan = document.createElement('span');
               pointsTodaySpan.textContent = ` (+${potentialPoints})`;
               td.appendChild(pointsTodaySpan);
             }
 
             if (pointsToday) {
-              if (pointsToday > 0){
-                const pointsTodaySpan = document.createElement('span');
-                pointsTodaySpan.className = 'points-gain';
-                pointsTodaySpan.textContent = ` +${pointsToday}`;
-                td.appendChild(pointsTodaySpan);
-              }
-              else {
-                const pointsTodaySpan = document.createElement('span');
-                pointsTodaySpan.className = 'points-loss';
-                pointsTodaySpan.textContent = ` ${pointsToday}`;
-                td.appendChild(pointsTodaySpan);
-              }
+              const pointsTodaySpan = document.createElement('span');
+              pointsTodaySpan.className = pointsToday > 0 ? 'points-gain' : 'points-loss';
+              pointsTodaySpan.textContent = ` ${pointsToday > 0 ? '+' : ''}${pointsToday}`;
+              td.appendChild(pointsTodaySpan);
             }
           } else if (col === 'opponent') {
             td.textContent = formatOpponentLabel(team);
@@ -744,9 +890,10 @@
       }
 
       const wrapper = document.createElement('div');
-      wrapper.className = 'teams-table-wrapper live-scores-table';
+      wrapper.className = 'manager-team-table-scroll live-scores-table';
 
       const table = document.createElement('table');
+      table.className = 'manager-team-table';
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
 
@@ -769,7 +916,6 @@
         liveScoreColumns.forEach(col => {
           const td = document.createElement('td');
           td.dataset.label = formatColumnName(col);
-          td.classList.add(`live-score-${col}`);
 
           if (col === 'home') {
             td.innerHTML = `
@@ -803,17 +949,21 @@
 
     function setupTabs() {
       const buttons = Array.from(document.querySelectorAll('.tab-button'));
+      const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
       buttons.forEach(button => {
         button.addEventListener('click', () => {
           const target = button.dataset.tab;
           buttons.forEach(b => {
             const isActive = b.dataset.tab === target;
-            b.classList.toggle('active', isActive);
+            b.classList.toggle('is-active', isActive);
             b.setAttribute('aria-selected', isActive);
           });
 
-          document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === `${target}Tab`);
+          panels.forEach(panel => {
+            const isPanelActive = panel.id === `${target}Tab`;
+            panel.hidden = !isPanelActive;
+            panel.classList.toggle('active', isPanelActive);
           });
         });
       });
