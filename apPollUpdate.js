@@ -1,15 +1,16 @@
-function updateApPollRanksRunner() {
-  const rankMap = loadApPollRankings_();
+function adHocUpdateApPollRanksRunner() {
+  Logger.log("TEST");
+  const rankMap = adHocLoadApPollRankings_();
   if (!rankMap || rankMap.size === 0) {
     Logger.log('No AP poll rankings available.');
     return;
   }
-  applyApPollRanks_(rankMap);
+  adHocApplyApPollRanks_(rankMap);
 }
 
-function loadApPollRankings_() {
+function adHocLoadApPollRankings_() {
   const json = fetchJson_(AP_POLL_ENDPOINT);
-  const entries = parseApPollRanks_(json);
+  const entries = adHocParseApPollRanks_(json);
   const map = new Map();
   entries.forEach(entry => map.set(entry.team, entry.rank));
   return map;
@@ -23,7 +24,7 @@ function normalizeSchoolNameAP_(s) {
     .trim()
 }
 
-function parseApPollRanks_(json) {
+function adHocParseApPollRanks_(json) {
   const rankings = [];
   if (!json) return rankings;
 
@@ -39,7 +40,7 @@ function parseApPollRanks_(json) {
   if (Array.isArray(json.data)) {
     json.data.forEach((row, idx) => {
       const rank = row.RANK || row.rank || row.ranking || row.apRank || idx + 1;
-      const team = row.TEAM || row.team || row.school || row.SCHOOL;
+      const team = row.TEAM || row.team || row.school || row.SCHOOL || row['SCHOOL (1ST VOTES)'];
       addEntry(team, rank);
     });
     return rankings;
@@ -70,7 +71,7 @@ function parseApPollRanks_(json) {
   return rankings;
 }
 
-function applyApPollRanks_(rankMap) {
+function adHocApplyApPollRanks_(rankMap) {
   let teams;
   try {
     teams = readTable('TEAMS');
