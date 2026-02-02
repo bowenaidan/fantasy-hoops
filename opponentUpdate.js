@@ -37,7 +37,7 @@ function updateOpponentCellsForDate(isoDate) {
   const dayGames = fetchJson_(`${NCAA_API_BASE}/scoreboard/basketball-men/d1/${isoDate}/all-conf`);
   if (!dayGames || !Array.isArray(dayGames.games) || dayGames.games.length === 0) {
     Logger.log(`No games returned for ${isoDate}.`);
-    writeTable(TABLE_TEAMS, teams);
+    writeTable(SHEET_TEAMS, teams);
     return;
   }
 
@@ -87,7 +87,7 @@ function updateOpponentCellsForDate(isoDate) {
     }
   });
 
-  writeTable(TABLE_TEAMS, teams);
+  writeTable(SHEET_TEAMS, teams);
   writeTable(LIVE_SCORES, gameData);
 }
 

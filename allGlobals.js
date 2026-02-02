@@ -8,7 +8,6 @@ const BUY_GAME_LOSSES = 'BUY_GAME_LOSSES';
 const SHEET_DRAFT = '2025-2026 DRAFT';
 const PROCESSED_GAME_KEYS_PROP = 'processedGameKeys';
 const DEFAULT_SEASON_START_ISO = '2025/11/03';
-const TABLE_TEAMS = 'TEAMS';
 
 const CONFERENCE_TIER_MAP = new Map([
   ['acc', 'highMajor'],
