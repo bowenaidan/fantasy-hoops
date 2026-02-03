@@ -56,10 +56,9 @@ const ROSTER = ["UConn", "BYU", "High Point", "Michigan St.", "Saint Louis", "Ma
 
 // POSTSEASON mapping by round label appearing on NCAA pages.
 const POSTSEASON_POINTS = {
-  'National Champion': 80,
-  'National Runner Up': 50,
-  'Final Four': 40,
-  'Elite 8': 30,
+  'Championship': 80,
+  'FINAL FOUR': 40,
+  'Elite Eight': 30,
   'Sweet 16': 20
 };
 
