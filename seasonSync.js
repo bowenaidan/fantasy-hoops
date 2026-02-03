@@ -1,5 +1,5 @@
 function seasonSyncRunner(options) {
-  runSeasonDailySync_(DEFAULT_SEASON_START_ISO, getTodayIsoDate_(), options || {});
+  runSeasonDailySync_(DEFAULT_SEASON_START_ISO, '2026/02/02', options || {});
 }
 
 function seasonSyncForRange(startIsoDate, endIsoDate, options) {
@@ -7,6 +7,13 @@ function seasonSyncForRange(startIsoDate, endIsoDate, options) {
 }
 
 function runSeasonDailySync_(startIsoDate, endIsoDate, options) {
+  const syncOptions = options || {};
+  if (!syncOptions.skipTableCheck) {
+    if (!ensureSeasonSyncTables_()) {
+      return;
+    }
+  }
+
   const start = parseIsoDate_(startIsoDate);
   const today = parseIsoDate_(getTodayIsoDate_());
   const suppliedEnd = parseIsoDate_(endIsoDate);
@@ -47,6 +54,19 @@ function parseIsoDate_(isoDate) {
   const [year, month, day] = parts;
   const date = new Date(Date.UTC(year, month - 1, day));
   return isNaN(date.getTime()) ? null : date;
+}
+
+function ensureSeasonSyncTables_() {
+  const requiredTables = [SHEET_TEAMS, LIVE_SCORES];
+  for (const sheetName of requiredTables) {
+    try {
+      readTable(sheetName);
+    } catch (err) {
+      Logger.log(`Season sync aborted: ${err.message}`);
+      return false;
+    }
+  }
+  return true;
 }
 
 function formatIsoDate_(date) {
