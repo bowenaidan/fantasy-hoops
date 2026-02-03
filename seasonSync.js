@@ -1,5 +1,5 @@
 function seasonSyncRunner(options) {
-  runSeasonDailySync_(DEFAULT_SEASON_START_ISO, '2026/02/02', options || {});
+  runSeasonDailySync_(DEFAULT_SEASON_START_ISO, getTodayIsoDate_(), options || {});
 }
 
 function seasonSyncForRange(startIsoDate, endIsoDate, options) {
