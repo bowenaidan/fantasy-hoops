@@ -3,6 +3,7 @@ const NCAA_API_BASE = 'https://ncaa-api.henrygd.me';
 const AP_POLL_ENDPOINT = `${NCAA_API_BASE}/rankings/basketball-men/d1/associated-press`;
 const SHEET_POINTS = 'Point Structure';
 const SHEET_TEAMS = 'TEAMS';
+const SHEET_TEAMS_BACKUP = 'TEAMS_BACKUP';
 const LIVE_SCORES = 'LIVE_SCORES';
 const BUY_GAME_LOSSES = 'BUY_GAME_LOSSES';
 const SHEET_DRAFT = '2025-2026 DRAFT';
