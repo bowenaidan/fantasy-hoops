@@ -73,7 +73,7 @@ function parseApPollRanks_(json) {
 function applyApPollRanks_(rankMap) {
   let teams;
   try {
-    teams = readTable('TEAMS');
+    teams = readTable(SHEET_TEAMS);
   } catch (err) {
     Logger.log(err);
     return;
@@ -106,6 +106,6 @@ function applyApPollRanks_(rankMap) {
     return;
   }
 
-  writeTable('TEAMS', teams);
+  writeTable(SHEET_TEAMS, teams);
   Logger.log('AP poll ranks applied to TEAMS table.');
 }
